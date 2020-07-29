@@ -15,6 +15,7 @@
 
 void decideDraculaMove(DraculaView dv)
 {
-	// TODO: Replace this with something better!
+	
+	
 	registerBestPlay("CD", "Mwahahahaha");
 }

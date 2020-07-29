@@ -15,6 +15,20 @@
 
 void decideDraculaMove(DraculaView dv)
 {
-	// TODO: Replace this with something better!
-	registerBestPlay("CD", "Mwahahahaha");
+	// get all places dracula can go
+	int *num_roads = 0;
+	int *num_boat = 0;
+	PlaceId *options_road = DvWhereCanIGoByType(dv, true, false, num_roads);
+	PlaceId *options_boat = DvWhereCanIGoByType(dv, false, true, num_boat);
+
+	PlaceId hunter_locations[4];
+	Player player;
+	// get hunters location
+	for(int i = 0, player = PLAYER_LORD_GODALMING; i < 4; i++, player++) {
+		hunter_locations[i] = DvGetPlayerLocation(dv, player);
+	}
+
+	PlaceId best_place = options_road[1];
+
+	registerBestPlay(placeIdToAbbrev(best_place), "Mwahahahaha");
 }

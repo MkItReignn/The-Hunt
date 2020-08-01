@@ -12,15 +12,21 @@
 #include "Game.h"
 #include "hunter.h"
 #include "HunterView.h"
+#include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // #defines
 #define MAX_LENGTH 100
 
 // helper functions to determine what play to make
 bool should_research(HunterView hv);
-PlayerId camper(HunterView hv);
+Player camper(HunterView hv);
 PlaceId move_to_dracula(HunterView hv);
 PlaceId optimal_move(HunterView hv, PlaceId move);
+Player dracula_chaser(HunterView hv);
 
 void decideHunterMove(HunterView hv)
 {
@@ -32,13 +38,20 @@ void decideHunterMove(HunterView hv)
 
 	// hunter will research
 	if (should_research(hv)) {
-		play = placeIdToAbbrev(curr_loc);
+		play = strdup(placeIdToAbbrev(curr_loc));
+	// hunter closest to dracula becomes the main chaser
+	} else if  (curr_player == dracula_chaser(hv)) {
+		PlaceId next_move =  move_to_dracula(hv);
+		play = strdup(placeIdToAbbrev(next_move));
+	// hunter is already at Bucharest, stay 
+	} else if (curr_player == camper(hv) && curr_loc == BUCHAREST) {
+		play = strdup(placeIdToAbbrev(BUCHAREST));
 	// hunter will move to BUCHAREST to intercept dracula when he spawns
 	} else if (curr_player == camper(hv)) {
 		int path_length = 0;
 
 		PlaceId *locs = HvGetShortestPathTo(hv, curr_player, BUCHAREST, &path_length);
-		play = placeIdToAbbrev(locs[0]);
+		play = strdup(placeIdToAbbrev(locs[0]));
 	} else {
 		// move towards last known dracula location
 		PlaceId next_move = move_to_dracula(hv);
@@ -49,7 +62,7 @@ void decideHunterMove(HunterView hv)
 				next_move = optimal_move(hv, next_move);
 			}
 		}
-		play = placeIdToAbbrev(next_move);
+		play = strdup(placeIdToAbbrev(next_move));
 	}
 
 	registerBestPlay(play, message);
@@ -58,11 +71,11 @@ void decideHunterMove(HunterView hv)
 
 // if 3 rounds or more occur where we cannot see Dracula's location, return true
 bool should_research(HunterView hv) {
-	Round curr_round == HvGetRound(hv);
+	Round curr_round = HvGetRound(hv);
 	int round = 0;
 
 	// return false if we currently know Draculas location
-	if (HvGetLastKnownDraculaLocation(hv, &round) != NOWHERE)) return false;
+	if (HvGetLastKnownDraculaLocation(hv, &round) != NOWHERE) return false;
 		
 	// returning true if seen in last 3 rounds, else false
 	if (curr_round - round >= 3) return true;
@@ -70,7 +83,7 @@ bool should_research(HunterView hv) {
 }
 
 // return player which will move to Castle Dracula
-PlayerId camper(HunterView hv) {
+Player camper(HunterView hv) {
 	Player curr_camper = PLAYER_LORD_GODALMING;
 	int shortest_length = MAX_LENGTH;
 	int curr_length = 0;
@@ -91,7 +104,7 @@ PlaceId move_to_dracula(HunterView hv) {
 	int round = 0;
 	int path_length = 0;
 	Player curr_player = HvGetPlayer(hv);
-	PlaceId curr_loc = HvGetPlayerLocation(hv, curr_player);
+	// PlaceId curr_loc = HvGetPlayerLocation(hv, curr_player);
 
 	// returning the first location that will move hunter to dracula
 	PlaceId last_seen = HvGetLastKnownDraculaLocation(hv, &round);
@@ -129,4 +142,23 @@ PlaceId optimal_move(HunterView hv, PlaceId move) {
 
 	// if absolutely no other option, go to move
 	return move;
+}
+
+Player dracula_chaser(HunterView hv) {
+	Player dracula_chaser = PLAYER_LORD_GODALMING;
+	int shortest_length = MAX_LENGTH;
+	int curr_length = 0;
+	int round = 0;
+
+	PlaceId last_seen = HvGetLastKnownDraculaLocation(hv, &round);
+
+	// -1 as not including dracula
+	for (int i = 0; i < NUM_PLAYERS - 1; i++) {
+		HvGetShortestPathTo(hv, i, last_seen, &curr_length);
+		if (curr_length < shortest_length) {
+			shortest_length = curr_length;
+			dracula_chaser = i;
+		}
+	}
+	return dracula_chaser;
 }

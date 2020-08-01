@@ -38,20 +38,20 @@ void decideHunterMove(HunterView hv)
 
 	// hunter will research
 	if (should_research(hv)) {
-		play = strdup(placeIdToAbbrev(curr_loc));
+		play = (char *)placeIdToAbbrev(curr_loc);
 	// hunter closest to dracula becomes the main chaser
 	} else if  (curr_player == dracula_chaser(hv)) {
 		PlaceId next_move =  move_to_dracula(hv);
-		play = strdup(placeIdToAbbrev(next_move));
+		play = (char *)placeIdToAbbrev(next_move);
 	// hunter is already at Bucharest, stay 
 	} else if (curr_player == camper(hv) && curr_loc == BUCHAREST) {
-		play = strdup(placeIdToAbbrev(BUCHAREST));
+		play = (char *)placeIdToAbbrev(BUCHAREST);
 	// hunter will move to BUCHAREST to intercept dracula when he spawns
 	} else if (curr_player == camper(hv)) {
 		int path_length = 0;
 
 		PlaceId *locs = HvGetShortestPathTo(hv, curr_player, BUCHAREST, &path_length);
-		play = strdup(placeIdToAbbrev(locs[0]));
+		play = (char *)placeIdToAbbrev(locs[0]);
 	} else {
 		// move towards last known dracula location
 		PlaceId next_move = move_to_dracula(hv);
@@ -62,7 +62,7 @@ void decideHunterMove(HunterView hv)
 				next_move = optimal_move(hv, next_move);
 			}
 		}
-		play = strdup(placeIdToAbbrev(next_move));
+		play = (char *)placeIdToAbbrev(next_move);
 	}
 
 	registerBestPlay(play, message);

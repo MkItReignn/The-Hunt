@@ -35,9 +35,11 @@ void decideHunterMove(HunterView hv)
 
 	Player curr_player = HvGetPlayer(hv);
 	PlaceId curr_loc = HvGetPlayerLocation(hv, curr_player);
+	
+	Round curr_round = HvGetRound(hv);
 
 	// hunter will research
-	if (should_research(hv)) {
+	if (should_research(hv) && curr_round > 6) {
 		play = (char *)placeIdToAbbrev(curr_loc);
 	// hunter closest to dracula becomes the main chaser
 	} else if  (curr_player == dracula_chaser(hv)) {

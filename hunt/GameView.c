@@ -65,6 +65,9 @@ struct gameView {
 	PlaceId  vampireLocation;              // location of the immature vampire
 	bool     restAttempted;                // if the hunter attempted to rest
 	
+	// personal additions
+	
+
 	// History
 	PlaceId *moveHistory[NUM_PLAYERS];     // each player's move history
 	PlaceId *draculaLocationHistory;       // Dracula's location history
@@ -127,6 +130,12 @@ GameView GvNew(char *pastPlays, Message messages[])
 	processTurns(gv, turns, numTurns);
 	free(turns);
 	
+	// personal additions
+	// gv->teleporting = false;
+	// gv->teleport_round_start = -11;
+	// gv->curr_teleport_route = -11;
+
+
 	gv->map = MapNew();
 	return gv;
 }
@@ -611,7 +620,6 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 {
 	bool locations[NUM_REAL_PLACES] = {};
 	locations[from] = true;
-	
 	if (road) {
 		addRoadConnections(gv->map, player, from, locations);
 	}
@@ -622,7 +630,6 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 	if (boat) {
 		addBoatConnections(gv->map, player, from, locations);
 	}
-	
 	return boolsToPlaces(locations, numReturnedLocs);
 }
 
@@ -690,4 +697,7 @@ void test(int a, int b) {
 	printf("%d %d\n", a, b);
 }
 
+// bool isTeleporting(GameView gv) {
+// 	return gv->teleporting;
+// }
 

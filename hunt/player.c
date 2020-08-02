@@ -59,8 +59,16 @@ typedef DraculaView View;
 # define ViewNew DvNew
 # define decideMove decideDraculaMove
 # define ViewFree DvFree
+// "GZA.... SED.... HZU.... MZU.... DTO.V.. GZA.... SED.... HZU.... MZU.... DTP.... GZA.... SED.... HZU.... MZU...."
 
-# define xPastPlays "GZA.... SED.... HZU.... MZU...."
+/**
+ * "GZA.... SED.... HZU.... MZU.... DTO.V.. "
+	"GZA.... SED.... HZU.... MZU.... DAL.... "
+	"GZA.... SED.... HZU.... MZU.... DGR.... "
+	"GZA.... SED.... HZU.... MZU.... DCA.... "
+	"GZA.... SED.... HZU.... MZU.... DD1....";
+ */
+# define xPastPlays "GZA.... SED.... HZU.... MZU.... DTO.V.. "
 # define xMsgs { "", "", "", "" }
 
 #else
@@ -78,7 +86,13 @@ typedef HunterView View;
 
 int main(void)
 {
-	char *pastPlays = xPastPlays;
+	char *pastPlays =  "GZA.... SED.... HZU.... MZU.... DTO.V.. "
+					"GZA.... SED.... HZU.... MZU.... DSR.... "
+					"GZA.... SED.... HZU.... MZU.... DMA.... "
+					"GZA.... SED.... HZU.... MZU.... DAL.... "
+					"GZA.... SED.... HZU.... MZU.... DGR.... "
+					"GZA.... SED.... HZU.... MZU.... DCA.... "
+					"GZA.... SED.... HZU.... MZU.... DD1....";
 	Message msgs[] = xMsgs;
 
 	View state = ViewNew(pastPlays, msgs);

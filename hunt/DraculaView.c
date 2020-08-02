@@ -20,6 +20,7 @@
 #include "Map.h"
 // add your own #includes here
 #include "utils.h"
+#include "Queue.h"
 
 struct draculaView {
 	GameView gv;
@@ -29,7 +30,11 @@ struct draculaView {
 	                                        // reverse order
 	PlaceId trailLocations[TRAIL_SIZE - 1]; // Dracula's last 5 locations
 	                                        // in reverse order
-	int trailLength;
+	int trailLength;	
+
+
+	// personal additions
+
 };
 
 PlaceId DvWhereAmI(DraculaView dv);
@@ -47,7 +52,7 @@ DraculaView DvNew(char *pastPlays, Message messages[])
 		fprintf(stderr, "Couldn't allocate DraculaView\n");
 		exit(EXIT_FAILURE);
 	}
-
+	
 	dv->gv = GvNew(pastPlays, messages);
 	fillTrail(dv);
 	return dv;
@@ -346,10 +351,149 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 
 ////////////////////////////////////////////////////////////////////////
 // Your own interface functions
-
+PlaceId DvWhereAmI(DraculaView dv);
+PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r);
+PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
+                             int *pathLength);
+// static Round playerNextRound(DraculaView dv, Player player);
 // TODO
 
 PlaceId DvWhereAmI(DraculaView dv)
 {
 	return DvGetPlayerLocation(dv, PLAYER_DRACULA);
+}
+
+PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
+                             int *pathLength)
+{
+	Round r = DvGetRound(dv);
+	PlaceId src = DvGetPlayerLocation(dv, dracula);
+	PlaceId *pred = DraculaBfs(dv, dracula, src, r);
+	
+	// One pass to get the path length
+	int dist = 0;
+	PlaceId curr = dest;
+	while (curr != src) {
+		dist++;
+		curr = pred[curr];
+	}
+	
+	PlaceId *path = malloc(dist * sizeof(PlaceId));
+	// Another pass to copy the path in
+	int i = dist - 1;
+	curr = dest;
+	while (curr != src) {
+		path[i] = curr;
+		curr = pred[curr];
+		i--;
+	}
+	
+	free(pred);
+	*pathLength = dist;
+	return path;
+}
+
+PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r) {
+	PlaceId *pred = malloc(NUM_REAL_PLACES * sizeof(PlaceId));
+	placesFill(pred, NUM_REAL_PLACES, -1);
+	pred[src] = src;
+	
+	Queue q1 = QueueNew(); // current round locations
+	Queue q2 = QueueNew(); // next round locations
+	
+	QueueEnqueue(q1, src);
+	while (!(QueueIsEmpty(q1) && QueueIsEmpty(q2))) {
+		PlaceId curr = QueueDequeue(q1);
+		int numReachable = 0;
+		// PlaceId *reachable = GvGetReachable(dv->gv, dracula, r, curr,
+		//                                     &numReachable);
+		PlaceId *reachable = GvGetReachableByType(dv->gv, PLAYER_DRACULA, r, curr, true, false, true, &numReachable);
+		// printf("Here\n");
+		for (int i = 0; i < numReachable; i++) {
+			if (pred[reachable[i]] == -1) {
+				pred[reachable[i]] = curr;
+				QueueEnqueue(q2, reachable[i]);
+			}
+		}
+		free(reachable);
+		
+		// When we've exhausted the current round's locations, advance
+		// to the next round and swap the queues (so the next round's
+		// locations becomes the current round's locations)
+		if (QueueIsEmpty(q1)) {
+			Queue tmp = q1; q1 = q2; q2 = tmp; // swap queues
+			r++;
+		}
+	}
+	
+	QueueDrop(q1);
+	QueueDrop(q2);
+	return pred;
+}
+
+// static Round playerNextRound(DraculaView dv, Player player) {
+// 	return DvGetRound(dv) + (player < PLAYER_DRACULA ? 1 : 0);
+// }
+/**
+ * function for teleporting back to CD once at MA
+ */
+// PlaiceId *teleportation(DraculaView dv, )
+
+
+/**
+ * see how many times vampire teleported
+ */
+int DvNumberOfTeleport(DraculaView dv) {
+	int numTp = 0;
+	int numReturn = 0;
+	bool canFree = false;
+	PlaceId *location = GvGetMoveHistory(dv->gv, PLAYER_DRACULA, &numReturn, &canFree);
+	printf("\n\n");
+	for (int i = 0; i < numReturn; i++) {
+		
+		printf("%s\n", placeIdToAbbrev(location[i]));
+		if (location[i] == TELEPORT) {
+			numTp++;
+		}
+	}
+	printf("\n\n");
+	return numTp;
+}
+
+PlaceId TpSequence(PlaceId curr, int sq) {
+	if (sq == 0) {
+		switch (curr)
+		{
+		case MADRID:
+			return ALICANTE;
+			break;
+		case ALICANTE:
+			return GRANADA;
+		case CADIZ:
+			return DOUBLE_BACK_1;		
+		default:
+			break;
+		}
+	} 
+	/*
+	else {
+		switch (curr)
+		{
+		case :
+			
+			break;
+		
+		default:
+			break;
+		}
+	}
+	*/
+	return NOWHERE;
+}
+
+bool lastMoveDoubleBack(DraculaView dv) {
+	int numReturn = 0;
+	bool canFree = false;
+	PlaceId *DB = GvGetLastMoves(dv->gv, PLAYER_DRACULA, 1, &numReturn, &canFree);
+	return DB[0] == DOUBLE_BACK_1 || DB[0] == DOUBLE_BACK_2 || DB[0] == DOUBLE_BACK_3 || DB[0] == DOUBLE_BACK_4 || DB[0] == DOUBLE_BACK_5;
 }

@@ -179,5 +179,18 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 // Your own interface functions
 
 // TODO
+PlaceId DvWhereAmI(DraculaView dv);
+
+PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
+                             int *pathLength);
+
+
+int DvNumberOfTeleport(DraculaView dv);
+
+PlaceId TpSequence(PlaceId curr, int sq);
+
+bool lastMoveDoubleBack(DraculaView dv);
+
+
 
 #endif // !defined(FOD__DRACULA_VIEW_H_)

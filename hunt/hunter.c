@@ -35,29 +35,45 @@ void decideHunterMove(HunterView hv)
 
 	Player curr_player = HvGetPlayer(hv);
 	PlaceId curr_loc = HvGetPlayerLocation(hv, curr_player);
-	
 	Round curr_round = HvGetRound(hv);
-
+	// spawn locations
+	if (curr_loc == NOWHERE) {
+		if (curr_player == PLAYER_LORD_GODALMING) {
+			play = (char *)placeIdToAbbrev(MILAN);
+		} else if (curr_player == PLAYER_DR_SEWARD) {
+			play = (char *)placeIdToAbbrev(SARAGOSSA);
+		} else if (curr_player == PLAYER_VAN_HELSING) {
+			play = (char *)placeIdToAbbrev(COLOGNE);
+		} else {
+			play = (char *)placeIdToAbbrev(BUCHAREST);
+		}
+		registerBestPlay(play, message);
+		return;
+	} 
+	//printf("%d - camper\n", camper(hv));
 	// hunter will research
-	if (should_research(hv) && curr_round > 6) {
+	if (should_research(hv) && curr_round >= 6) {
 		play = (char *)placeIdToAbbrev(curr_loc);
+		// printf("research\n");
 	// hunter closest to dracula becomes the main chaser
-	} else if  (curr_player == dracula_chaser(hv)) {
+	} else if (curr_player == dracula_chaser(hv)) {
 		PlaceId next_move =  move_to_dracula(hv);
 		play = (char *)placeIdToAbbrev(next_move);
+		// printf("drac chaser\n");
 	// hunter is already at Bucharest, stay 
 	} else if (curr_player == camper(hv) && curr_loc == BUCHAREST) {
 		play = (char *)placeIdToAbbrev(BUCHAREST);
+		// printf("at BC\n");
 	// hunter will move to BUCHAREST to intercept dracula when he spawns
 	} else if (curr_player == camper(hv)) {
 		int path_length = 0;
 
 		PlaceId *locs = HvGetShortestPathTo(hv, curr_player, BUCHAREST, &path_length);
 		play = (char *)placeIdToAbbrev(locs[0]);
+		// printf("going BC\n");
 	} else {
 		// move towards last known dracula location
 		PlaceId next_move = move_to_dracula(hv);
-
 		// looping to check if previous player has moved towards same city
 		for (int i = 0; i < curr_player; i++) {
 			if (HvGetPlayerLocation(hv, i) == next_move) {
@@ -65,8 +81,8 @@ void decideHunterMove(HunterView hv)
 			}
 		}
 		play = (char *)placeIdToAbbrev(next_move);
+		// printf("move drac\n");
 	}
-
 	registerBestPlay(play, message);
 }
 
@@ -76,16 +92,24 @@ bool should_research(HunterView hv) {
 	Round curr_round = HvGetRound(hv);
 	int round = 0;
 
-	// return false if we currently know Draculas location
-	if (HvGetLastKnownDraculaLocation(hv, &round) != NOWHERE) return false;
-		
-	// returning true if seen in last 3 rounds, else false
-	if (curr_round - round >= 3) return true;
-	else return false;
+	// check location of dracula
+	if (HvGetLastKnownDraculaLocation(hv, &round) != NOWHERE) {
+		// returning true if seen in last 3 rounds, else false
+		if (curr_round - round >= 3) {
+			return true;
+		} else {
+			return false;
+		} 
+	} else {
+		return true;
+	}
+	
+	
 }
 
 // return player which will move to Castle Dracula
 Player camper(HunterView hv) {
+	
 	Player curr_camper = PLAYER_LORD_GODALMING;
 	int shortest_length = MAX_LENGTH;
 	int curr_length = 0;
@@ -93,7 +117,8 @@ Player camper(HunterView hv) {
 	// -1 as not including dracula
 	for (int i = 0; i < NUM_PLAYERS - 1; i++) {
 		HvGetShortestPathTo(hv, i, BUCHAREST, &curr_length);
-		if (curr_length < shortest_length) {
+		//printf("%d - dracula chaser\n", dracula_chaser(hv));
+		if (curr_length < shortest_length && i != dracula_chaser(hv)) {
 			shortest_length = curr_length;
 			curr_camper = i;
 		}

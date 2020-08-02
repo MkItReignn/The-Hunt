@@ -14,7 +14,13 @@
 #include "Game.h"
 
 void decideDraculaMove(DraculaView dv)
-{
+{	
+	// always start at Toulouse - TO
+	if (DvGetRound == 0) {
+		registerBestPlay("TO", " ");
+	}
+
+	
 	
 	
 	registerBestPlay("CD", "Mwahahahaha");

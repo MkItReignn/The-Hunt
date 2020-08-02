@@ -16,11 +16,29 @@
 void decideDraculaMove(DraculaView dv)
 {	
 	// always start at Toulouse - TO
-	if (DvGetRound == 0) {
+	if (DvGetRound(dv) == 0) {
 		registerBestPlay("TO", " ");
 	}
 
-	
+	// move down to GR and teleport back to CD
+	// will make a funciton for this later
+	else if (DvGetRound(dv)  == 1) {
+		registerBestPlay("SR", " ");
+	} else if (DvGetRound(dv)  == 2) {
+		registerBestPlay("MA", " ");
+	} else if (DvGetRound(dv)  == 3) {
+		registerBestPlay("AL", " ");
+	} else if (DvGetRound(dv)  == 4) {
+		registerBestPlay("GR", " ");
+	} else if (DvGetRound(dv)  == 5) {
+		registerBestPlay("CA", " ");
+	} else if (DvGetRound(dv)  == 6) {
+		registerBestPlay("D1", " ");
+	} else if (DvGetRound(dv)  == 7) {
+		registerBestPlay("HI", " ");
+	}
+
+
 	
 	
 	registerBestPlay("CD", "Mwahahahaha");

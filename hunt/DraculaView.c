@@ -471,6 +471,8 @@ PlaceId TpHotSpot(DraculaView dv)
 		// 3. MU (VENICE PATH)
 		// 4. VI (PRAGUE PATH)
 		// whilst running into min num of hunters 
+		// if hunters are all positioned north-west, head south via sea 
+		// as we want to move them away from CD
 		break;
 	case MADRID_PATH:
 		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, MADRID);

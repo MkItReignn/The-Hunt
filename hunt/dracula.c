@@ -20,30 +20,8 @@ void decideDraculaMove(DraculaView dv)
 	// always start at Toulouse - TO
 	if (DvGetRound(dv) == 0) {		
 		registerBestPlay("TO", "First Round");	
-	} else if (DvNumberOfTeleport(dv) % 2 == 0) { // first TP hotspot
-			/**
-			 * need to replace DvWhereAmI with a function that finds out if MA has been travelled to
-			 */
-			if (DvWhereAmI(dv) != MADRID) { // if you are not at madrid
-				int path_length = 0;
-				PlaceId *shortest = DvGetShortestPathTo(dv, PLAYER_DRACULA, MADRID, &path_length);		
-				printf("Shortest path from curr location: %s\n", placeIdToAbbrev(DvWhereAmI(dv)));
-				// for (int i = 0; i < path_length; i++) {
-				// 	printf("%d %s\n", shortest[i], placeIdToAbbrev(shortest[i]));
-				// }
-				play = (char *)placeIdToAbbrev(shortest[0]);
-			} else if (lastMoveDoubleBack(dv)) {
-				play = "HI";
-			} 
-			
-			else {
-				play = (char *)placeIdToAbbrev(TpSequence(DvWhereAmI(dv), 0));
-			}
-	
-				
-		
-	} else { // second TP hotspot -> DvNumberOfTeleport(dv) % 2 != 0
-
+	} else  {
+		play = (char *)placeIdToAbbrev(tpHotSpot(dv));
 	}
 	
 

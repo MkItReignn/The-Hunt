@@ -465,7 +465,12 @@ PlaceId TpHotSpot(DraculaView dv)
 	switch (district)
 	{
 	case RANDOM_PATH:
-		// to do 
+		// to do: try to get to (in order of priority)
+		// 1. GE (MADRID PATH)
+		// 2. ST (ENGLISH CHANNEL PATH)
+		// 3. MU (VENICE PATH)
+		// 4. VI (PRAGUE PATH)
+		// whilst running into min num of hunters 
 		break;
 	case MADRID_PATH:
 		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, MADRID);

@@ -527,7 +527,7 @@ PlaceId TpGetToHead(DraculaView dv, PlaceId head)
 				// store sea location incase no land is found
 				valid_boat = valid[i];
 			}
-		} return valid[0];
+		}
 	}
 
 	// no valid boat was found and nowhere is returned, we are forced to do 

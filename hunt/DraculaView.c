@@ -23,6 +23,7 @@
 #include "Queue.h"
 #include "District.h"
 
+#define RANDOM_PATH 0
 #define MADRID_PATH 1
 #define PRAGUE_PATH 2
 #define VENICE_PATH 3
@@ -463,6 +464,9 @@ PlaceId TpHotSpot(DraculaView dv)
 	// need to be avoided prior to getting to the head
 	switch (district)
 	{
+	case RANDOM_PATH:
+		// to do 
+		break;
 	case MADRID_PATH:
 		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, MADRID);
 		else next = TpGetToTail(DvGetLastMove(dv), district);

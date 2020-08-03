@@ -30,7 +30,7 @@ Player dracula_chaser(HunterView hv);
 
 void decideHunterMove(HunterView hv)
 {
-	char *play;
+	const char *play;
 	char *message = "\0";
 
 	Player curr_player = HvGetPlayer(hv);
@@ -39,13 +39,13 @@ void decideHunterMove(HunterView hv)
 	// spawn locations
 	if (curr_loc == NOWHERE) {
 		if (curr_player == PLAYER_LORD_GODALMING) {
-			play = (char *)placeIdToAbbrev(MILAN);
+			play = placeIdToAbbrev(MILAN);
 		} else if (curr_player == PLAYER_DR_SEWARD) {
-			play = (char *)placeIdToAbbrev(SARAGOSSA);
+			play = placeIdToAbbrev(SARAGOSSA);
 		} else if (curr_player == PLAYER_VAN_HELSING) {
-			play = (char *)placeIdToAbbrev(COLOGNE);
+			play = placeIdToAbbrev(COLOGNE);
 		} else {
-			play = (char *)placeIdToAbbrev(BUCHAREST);
+			play = placeIdToAbbrev(BUCHAREST);
 		}
 		registerBestPlay(play, message);
 		return;
@@ -53,23 +53,23 @@ void decideHunterMove(HunterView hv)
 	//printf("%d - camper\n", camper(hv));
 	// hunter will research
 	if (should_research(hv) && curr_round >= 6) {
-		play = (char *)placeIdToAbbrev(curr_loc);
+		play = placeIdToAbbrev(curr_loc);
 		// printf("research\n");
 	// hunter closest to dracula becomes the main chaser
 	} else if (curr_player == dracula_chaser(hv)) {
 		PlaceId next_move =  move_to_dracula(hv);
-		play = (char *)placeIdToAbbrev(next_move);
+		play = placeIdToAbbrev(next_move);
 		// printf("drac chaser\n");
 	// hunter is already at Bucharest, stay 
 	} else if (curr_player == camper(hv) && curr_loc == BUCHAREST) {
-		play = (char *)placeIdToAbbrev(BUCHAREST);
+		play = placeIdToAbbrev(BUCHAREST);
 		// printf("at BC\n");
 	// hunter will move to BUCHAREST to intercept dracula when he spawns
 	} else if (curr_player == camper(hv)) {
 		int path_length = 0;
 
 		PlaceId *locs = HvGetShortestPathTo(hv, curr_player, BUCHAREST, &path_length);
-		play = (char *)placeIdToAbbrev(locs[0]);
+		play = placeIdToAbbrev(locs[0]);
 		// printf("going BC\n");
 	} else {
 		// move towards last known dracula location
@@ -80,7 +80,7 @@ void decideHunterMove(HunterView hv)
 				next_move = optimal_move(hv, next_move);
 			}
 		}
-		play = (char *)placeIdToAbbrev(next_move);
+		play = placeIdToAbbrev(next_move);
 		// printf("move drac\n");
 	}
 	registerBestPlay(play, message);

@@ -21,7 +21,7 @@ void decideDraculaMove(DraculaView dv)
 	if (DvGetRound(dv) == 0) {		
 		registerBestPlay("TO", "First Round");	
 	} else  {
-		play = (char *)placeIdToAbbrev(tpHotSpot(dv));
+		play = (char *)placeIdToAbbrev(TpHotSpot(dv));
 	}
 	
 

@@ -21,6 +21,12 @@
 // add your own #includes here
 #include "utils.h"
 #include "Queue.h"
+#include "District.h"
+
+#define MADRID_PATH 1
+#define PRAGUE_PATH 2
+#define VENICE_PATH 3
+#define ENGCHA_PATH 4
 
 struct draculaView {
 	GameView gv;
@@ -31,8 +37,6 @@ struct draculaView {
 	PlaceId trailLocations[TRAIL_SIZE - 1]; // Dracula's last 5 locations
 	                                        // in reverse order
 	int trailLength;	
-
-
 	// personal additions
 
 };
@@ -393,7 +397,8 @@ PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
 	return path;
 }
 
-PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r, bool road, bool boat) {
+PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r, bool road, bool boat) 
+{
 	PlaceId *pred = malloc(NUM_REAL_PLACES * sizeof(PlaceId));
 	placesFill(pred, NUM_REAL_PLACES, -1);
 	pred[src] = src;
@@ -428,36 +433,114 @@ PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r, bool r
 	QueueDrop(q2);
 	return pred;
 }
-PlaceId tpHotSpot(DraculaView dv);
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+///////////// GET NEXT MOVE
+PlaceId TpHotSpot(DraculaView dv);
+PlaceId TpGetToHead(DraculaView dv, PlaceId head);
+PlaceId TpGetToTail(PlaceId lastMove, int district);
 PlaceId DvGetLastMove(DraculaView dv);
-bool atHotSpot(DraculaView dv, int sq);
-PlaceId TpSequence(DraculaView dv, PlaceId lastMove, int sq);
+PlaceId TpMoveToCity(DraculaView dv, PlaceId move); 
 
+// Function that decides the next best move, based on the current location of
+// dracula, he moves towards one of four cities using routes that force him
+// to teleport to CD. 
+// Note: there is a chance that no "good" move can be made i.e. we are forced
+// to enter the route that forces teleport in an incorrect order. In this event
+// our function is not able to recover
+PlaceId TpHotSpot(DraculaView dv) 
+{
+	// move from current location to tp hot spot location dependent on which sequence to employ
+	PlaceId curr_loc = DvGetPlayerLocation(dv, PLAYER_DRACULA);
+	int district = DtWhichDistrict(curr_loc);
+	PlaceId next = NOWHERE;
 
-/**
- * see how many times vampire teleported
- */
-int DvNumberOfTeleport(DraculaView dv) {
-	int numTp = 0;
-	int numReturn = 0;
-	bool canFree = false;
-	PlaceId *location = GvGetMoveHistory(dv->gv, PLAYER_DRACULA, &numReturn, &canFree);
-	// printf("\n\n");
-	for (int i = 0; i < numReturn; i++) {
-		
-		// printf("%s\n", placeIdToAbbrev(location[i]));
-		if (location[i] == TELEPORT) {
-			numTp++;
-		}
+	// Note: "tail" refers to the endpoint i.e. place we teleport, and "head"
+	// refers to the starting point of predetermined routes that force teleporting,
+	// "path" refers to that cities that are on the abovementioned route which
+	// need to be avoided prior to getting to the head
+	switch (district)
+	{
+	case MADRID_PATH:
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, MADRID);
+		else next = TpGetToTail(DvGetLastMove(dv), district);
+		break;
+	case PRAGUE_PATH:
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, PRAGUE);
+		else next = TpGetToTail(DvGetLastMove(dv), district);
+		break;
+	case VENICE_PATH:
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, VENICE);
+		else next = TpGetToTail(DvGetLastMove(dv), district);
+		break;
+	case ENGCHA_PATH:
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, ENGLISH_CHANNEL);
+		else next = TpGetToTail(DvGetLastMove(dv), district);
+		break;
+	default:
+		break;
 	}
-	// printf("\n\n");
-	return numTp;
+
+	// Get all of the valid moves we can make
+	int *num_valid_locs = 0;
+	PlaceId *valid_locs = DvWhereCanIGo(dv, num_valid_locs);
+	// If TpGetToHead fails it returns NOWHERE, in which case make a random move
+	// need better solution
+	if(next == NOWHERE) return valid_locs[0]; 
+
+	// converts a move like HIDE into the actual city, used for comparison
+	PlaceId city_loc = MoveToCity(dv, next); 
+	for(int i = 0; i < num_valid_locs; i++) {
+		if(city_loc == valid_locs[i]) return next;
+	}
+
+	// if this happens then we are kinda screwed for the rest of the game
+	// need a new back up for this return, maybe store in the struct
+	return valid_locs[0];
 }
 
-PlaceId TpSequence(DraculaView dv, PlaceId lastMove, int sq) {
+
+// Function that decides the next best move to get dracula to the "head" of the
+// teleport route, "head" is defined as the starting city of the route that forces
+// teleporting
+PlaceId TpGetToHead(DraculaView dv, PlaceId head)
+{
+ 	int path_length = 0;
+	PlaceId *path_road = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length, true, false);
+	PlaceId *path_any = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length, true, true);
+
+	// make sure not to enter the path from somewhere thats not the head
+	if(!DtIsOnPath(path_road[0])) return path_road[0];
+	if(!DtIsOnPath(path_any[0])) return path_any[0];
+
+	// go anywhere thats not on the path, prioritise road over sea
+	PlaceId *valid = DvWhereCanIGo(dv, &path_length);
+	PlaceId valid_boat = NOWHERE;
+	for(int i = 0; i < path_length; i++) {
+		if(!DtIsOnPath(valid[i])) {
+			if(!placeIsSea(valid[i])) {
+				// return the first valid location thats not at sea
+				return valid[i];
+			} else {
+				// store sea location incase no land is found
+				valid_boat = valid[i];
+			}
+		} return valid[0];
+	}
+
+	// no valid boat was found and nowhere is returned, we are forced to do 
+	// an early entry into the path which means we are kinda screwed, need solution
+	return valid_boat;
+}
+
+// Function that decides the next best move to get dracula to the "tail" of the
+// teleport route, "tail" is defined as the city dracula is forced to teleport from
+PlaceId TpGetToTail(PlaceId lastMove, int district) {
 	// perhaps i should call DvWhereCanIGo to check if I can't go anywhere, and if that is the case return the move TP
 
-	if (sq == 0) {
+	if (district == MADRID_PATH) {
 		switch (lastMove)
 		{
 		case MADRID:
@@ -467,9 +550,9 @@ PlaceId TpSequence(DraculaView dv, PlaceId lastMove, int sq) {
 			return GRANADA;
 			break;
 		case CADIZ:
-			return DOUBLE_BACK_1;	
+			return DOUBLE_BACK_2;	
 			break;	
-		case DOUBLE_BACK_1:
+		case DOUBLE_BACK_2:
 			return HIDE;
 			break;
 		case HIDE:
@@ -479,7 +562,7 @@ PlaceId TpSequence(DraculaView dv, PlaceId lastMove, int sq) {
 			break;
 		}
 	} 
-	else if (sq == 1) {
+	else if (district == PRAGUE_PATH) {
 		switch (lastMove)
 		{
 		case PRAGUE:
@@ -503,21 +586,41 @@ PlaceId TpSequence(DraculaView dv, PlaceId lastMove, int sq) {
 		default:
 			break;
 		}
-	} else if (sq == 2) {
+	} else if (district == VENICE_PATH) {
 		switch (lastMove)
 		{
-			case ROME:
-				return FLORENCE;
-				break;
-			case FLORENCE:
-				return GENOA;
-			case GENOA:
-				return VENICE;
-				break;
 			case VENICE:
-				return DOUBLE_BACK_3;
+				return GENOA;
 				break;
-			case DOUBLE_BACK_3:
+			case GENOA:
+				return FLORENCE;
+			case FLORENCE:
+				return ROME;
+				break;
+			case ROME:
+				return DOUBLE_BACK_2;
+				break;
+			case DOUBLE_BACK_2:
+				return HIDE;
+				break;
+			case HIDE:
+				return TELEPORT;
+				break;
+			default:
+				break;
+		}
+	}  else if (district == ENGCHA_PATH) {
+		switch (lastMove)
+		{
+			case ENGLISH_CHANNEL:
+				return PLYMOUTH;
+				break;
+			case PLYMOUTH:
+				return LONDON;
+			case LONDON:
+				return DOUBLE_BACK_2;
+				break;
+			case DOUBLE_BACK_2:
 				return HIDE;
 				break;
 			case HIDE:
@@ -527,8 +630,47 @@ PlaceId TpSequence(DraculaView dv, PlaceId lastMove, int sq) {
 				break;
 		}
 	}
-	
 	return NOWHERE;
+}
+
+// Function that retrieves draculas last move, used in TpGetToTail as it lets us
+// keep track of which city is visited next as these routes are predetermined and
+// fixed
+PlaceId DvGetLastMove(DraculaView dv)
+{
+	int numReturn = 0;
+	bool canFree = false;
+	PlaceId *lastMove = GvGetLastMoves(dv->gv, PLAYER_DRACULA, 1, &numReturn, &canFree);
+	return lastMove[0];
+}
+
+// Function that find the cities that dracula will go to if he uses HIDE or DOUBLE_BACK
+PlaceId TpMoveToCity(DraculaView dv, PlaceId move)
+{
+	// Currently does not account for the first 5 turns i.e. when numReturn < 5
+	// shouldn't be necessary as it should just be TO->SR->MA for the first 2 moves
+
+	// IMPORTANT: if by chance it goes to AL instead of MA for some reason 
+	// then our code breaks lol
+	int numReturn = 0;
+	bool canFree = false;
+	PlaceId *trail = GvGetLastMoves(dv->gv, PLAYER_DRACULA, 5, &numReturn, &canFree);
+
+	if(move == HIDE) {
+		return trail[4];
+	} else if(move == DOUBLE_BACK_1) {
+		return trail[4];	
+	} else if(move == DOUBLE_BACK_2) {
+		return trail[3];	
+	} else if(move == DOUBLE_BACK_3) {
+		return trail[2];
+	} else if(move == DOUBLE_BACK_4) {
+		return trail[1];
+	} else if(move == DOUBLE_BACK_5) {
+		return trail[0];	
+	}
+
+	return move;
 }
 
 /*
@@ -541,53 +683,32 @@ bool lastMoveDoubleBack(DraculaView dv) { // replaced by DvGetLastMove
 */
 
 
-
-PlaceId tpHotSpot(DraculaView dv) {
-	// move from current location to tp hot spot location dependent on which sequence to employ
-	int sequence = DvNumberOfTeleport(dv) % 3;
-	PlaceId next = NOWHERE;
-	switch (sequence)
-	{
-	case 0:
-		// with sequence 0 -> get to MADRID via road only
-		if (!atHotSpot(dv, sequence)) {
-			int path_length = 0;
-			PlaceId *shortest = DvGetShortestPathTo(dv, PLAYER_DRACULA, MADRID, &path_length, true, false);	
-			next = shortest[0];
-		} else {
-			next = TpSequence(dv, DvGetLastMove(dv), sequence);
-		}
-		break;
-	case 1:
-		if (!atHotSpot(dv, sequence)) {
-			int path_length = 0;
-			PlaceId *shortest = DvGetShortestPathTo(dv, PLAYER_DRACULA, MADRID, &path_length, true, false);	
-			next = shortest[0];
-		}
-		break;
-	case 2:
-		if (!atHotSpot(dv, sequence)) {
-			int path_length = 0;
-			PlaceId *shortest = DvGetShortestPathTo(dv, PLAYER_DRACULA, MADRID, &path_length, true, true);	
-			next = shortest[0];
-		}
-		break;
-	default:
-		break;
-	}
-
-
-	return next;
-}
-
-PlaceId DvGetLastMove(DraculaView dv) {
+/**
+ * see how many times vampire teleported
+ */
+/*
+int DvNumberOfTeleport(DraculaView dv) 
+{
+	int numTp = 0;
 	int numReturn = 0;
 	bool canFree = false;
-	PlaceId *lastMove = GvGetLastMoves(dv->gv, PLAYER_DRACULA, 1, &numReturn, &canFree);
-	return lastMove[0];
+	PlaceId *location = GvGetMoveHistory(dv->gv, PLAYER_DRACULA, &numReturn, &canFree);
+	// printf("\n\n");
+	for (int i = 0; i < numReturn; i++) {
+		
+		// printf("%s\n", placeIdToAbbrev(location[i]));
+		if (location[i] == TELEPORT) {
+			numTp++;
+		}
+	}
+	// printf("\n\n");
+	return numTp;
 }
+*/
 
-bool atHotSpot(DraculaView dv, int sq) {
+/*
+bool atHotSpot(DraculaView dv, int sq) 
+{
 	int numReturn = 0;
 	bool can_free = false;
 	PlaceId *trail = GvGetLastLocations(dv->gv, PLAYER_DRACULA, TRAIL_SIZE, &numReturn, &can_free);
@@ -604,3 +725,4 @@ bool atHotSpot(DraculaView dv, int sq) {
 	}
 	return false;
 }
+*/

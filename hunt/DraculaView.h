@@ -187,13 +187,13 @@ PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
 /* grabs the number of teleports the Dracula has used through counting the number of TP moves in MoveHistory*/
 int DvNumberOfTeleport(DraculaView dv);
 
-PlaceId TpSequence(DraculaView dv, PlaceId lastMove, int sq);
 
 bool lastMoveDoubleBack(DraculaView dv);
 
-PlaceId tpHotSpot(DraculaView dv);
+PlaceId TpHotSpot(DraculaView dv);
 PlaceId DvGetLastMove(DraculaView dv);
-bool atHotSpot(DraculaView dv, int sq);
+PlaceId TpGetToHead(DraculaView dv, PlaceId head);
+PlaceId TpGetToTail(PlaceId lastMove, int district);
 
 
 #endif // !defined(FOD__DRACULA_VIEW_H_)

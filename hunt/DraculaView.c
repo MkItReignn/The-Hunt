@@ -352,9 +352,9 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 ////////////////////////////////////////////////////////////////////////
 // Your own interface functions
 PlaceId DvWhereAmI(DraculaView dv);
-PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r);
+PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r, bool road, bool boat);
 PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
-                             int *pathLength);
+                             int *pathLength, bool road, bool boat);
 // static Round playerNextRound(DraculaView dv, Player player);
 // TODO
 
@@ -364,11 +364,11 @@ PlaceId DvWhereAmI(DraculaView dv)
 }
 
 PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
-                             int *pathLength)
+                             int *pathLength, bool road, bool boat)
 {
 	Round r = DvGetRound(dv);
 	PlaceId src = DvGetPlayerLocation(dv, dracula);
-	PlaceId *pred = DraculaBfs(dv, dracula, src, r);
+	PlaceId *pred = DraculaBfs(dv, dracula, src, r, road, boat);
 	
 	// One pass to get the path length
 	int dist = 0;
@@ -393,7 +393,7 @@ PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
 	return path;
 }
 
-PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r) {
+PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r, bool road, bool boat) {
 	PlaceId *pred = malloc(NUM_REAL_PLACES * sizeof(PlaceId));
 	placesFill(pred, NUM_REAL_PLACES, -1);
 	pred[src] = src;
@@ -405,9 +405,7 @@ PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r) {
 	while (!(QueueIsEmpty(q1) && QueueIsEmpty(q2))) {
 		PlaceId curr = QueueDequeue(q1);
 		int numReachable = 0;
-		// PlaceId *reachable = GvGetReachable(dv->gv, dracula, r, curr,
-		//                                     &numReachable);
-		PlaceId *reachable = GvGetReachableByType(dv->gv, PLAYER_DRACULA, r, curr, true, false, true, &numReachable);
+		PlaceId *reachable = GvGetReachableByType(dv->gv, PLAYER_DRACULA, r, curr, road, false, boat, &numReachable);
 		// printf("Here\n");
 		for (int i = 0; i < numReachable; i++) {
 			if (pred[reachable[i]] == -1) {
@@ -430,14 +428,10 @@ PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r) {
 	QueueDrop(q2);
 	return pred;
 }
-
-// static Round playerNextRound(DraculaView dv, Player player) {
-// 	return DvGetRound(dv) + (player < PLAYER_DRACULA ? 1 : 0);
-// }
-/**
- * function for teleporting back to CD once at MA
- */
-// PlaiceId *teleportation(DraculaView dv, )
+PlaceId tpHotSpot(DraculaView dv);
+PlaceId DvGetLastMove(DraculaView dv);
+bool atHotSpot(DraculaView dv, int sq);
+PlaceId TpSequence(DraculaView dv, PlaceId lastMove, int sq);
 
 
 /**
@@ -448,52 +442,165 @@ int DvNumberOfTeleport(DraculaView dv) {
 	int numReturn = 0;
 	bool canFree = false;
 	PlaceId *location = GvGetMoveHistory(dv->gv, PLAYER_DRACULA, &numReturn, &canFree);
-	printf("\n\n");
+	// printf("\n\n");
 	for (int i = 0; i < numReturn; i++) {
 		
-		printf("%s\n", placeIdToAbbrev(location[i]));
+		// printf("%s\n", placeIdToAbbrev(location[i]));
 		if (location[i] == TELEPORT) {
 			numTp++;
 		}
 	}
-	printf("\n\n");
+	// printf("\n\n");
 	return numTp;
 }
 
-PlaceId TpSequence(PlaceId curr, int sq) {
+PlaceId TpSequence(DraculaView dv, PlaceId lastMove, int sq) {
+	// perhaps i should call DvWhereCanIGo to check if I can't go anywhere, and if that is the case return the move TP
+
 	if (sq == 0) {
-		switch (curr)
+		switch (lastMove)
 		{
 		case MADRID:
 			return ALICANTE;
 			break;
 		case ALICANTE:
 			return GRANADA;
+			break;
 		case CADIZ:
-			return DOUBLE_BACK_1;		
+			return DOUBLE_BACK_1;	
+			break;	
+		case DOUBLE_BACK_1:
+			return HIDE;
+			break;
+		case HIDE:
+			return TELEPORT;
+			break;
 		default:
 			break;
 		}
 	} 
-	/*
-	else {
-		switch (curr)
+	else if (sq == 1) {
+		switch (lastMove)
 		{
-		case :
-			
+		case PRAGUE:
+			return BERLIN;
 			break;
-		
+		case BERLIN:
+			return LEIPZIG;
+			break;
+		case LEIPZIG:
+			return HAMBURG;
+			break;
+		case HAMBURG:
+			return DOUBLE_BACK_3;
+			break;
+		case DOUBLE_BACK_3:
+			return HIDE;
+			break;
+		case HIDE:
+			return TELEPORT;
+			break;
 		default:
 			break;
 		}
+	} else if (sq == 2) {
+		switch (lastMove)
+		{
+			case ROME:
+				return FLORENCE;
+				break;
+			case FLORENCE:
+				return GENOA;
+			case GENOA:
+				return VENICE;
+				break;
+			case VENICE:
+				return DOUBLE_BACK_3;
+				break;
+			case DOUBLE_BACK_3:
+				return HIDE;
+				break;
+			case HIDE:
+				return TELEPORT;
+				break;
+			default:
+				break;
+		}
 	}
-	*/
+	
 	return NOWHERE;
 }
 
-bool lastMoveDoubleBack(DraculaView dv) {
+/*
+bool lastMoveDoubleBack(DraculaView dv) { // replaced by DvGetLastMove
 	int numReturn = 0;
 	bool canFree = false;
 	PlaceId *DB = GvGetLastMoves(dv->gv, PLAYER_DRACULA, 1, &numReturn, &canFree);
 	return DB[0] == DOUBLE_BACK_1 || DB[0] == DOUBLE_BACK_2 || DB[0] == DOUBLE_BACK_3 || DB[0] == DOUBLE_BACK_4 || DB[0] == DOUBLE_BACK_5;
+}
+*/
+
+
+
+PlaceId tpHotSpot(DraculaView dv) {
+	// move from current location to tp hot spot location dependent on which sequence to employ
+	int sequence = DvNumberOfTeleport(dv) % 3;
+	PlaceId next = NOWHERE;
+	switch (sequence)
+	{
+	case 0:
+		// with sequence 0 -> get to MADRID via road only
+		if (!atHotSpot(dv, sequence)) {
+			int path_length = 0;
+			PlaceId *shortest = DvGetShortestPathTo(dv, PLAYER_DRACULA, MADRID, &path_length, true, false);	
+			next = shortest[0];
+		} else {
+			next = TpSequence(dv, DvGetLastMove(dv), sequence);
+		}
+		break;
+	case 1:
+		if (!atHotSpot(dv, sequence)) {
+			int path_length = 0;
+			PlaceId *shortest = DvGetShortestPathTo(dv, PLAYER_DRACULA, MADRID, &path_length, true, false);	
+			next = shortest[0];
+		}
+		break;
+	case 2:
+		if (!atHotSpot(dv, sequence)) {
+			int path_length = 0;
+			PlaceId *shortest = DvGetShortestPathTo(dv, PLAYER_DRACULA, MADRID, &path_length, true, true);	
+			next = shortest[0];
+		}
+		break;
+	default:
+		break;
+	}
+
+
+	return next;
+}
+
+PlaceId DvGetLastMove(DraculaView dv) {
+	int numReturn = 0;
+	bool canFree = false;
+	PlaceId *lastMove = GvGetLastMoves(dv->gv, PLAYER_DRACULA, 1, &numReturn, &canFree);
+	return lastMove[0];
+}
+
+bool atHotSpot(DraculaView dv, int sq) {
+	int numReturn = 0;
+	bool can_free = false;
+	PlaceId *trail = GvGetLastLocations(dv->gv, PLAYER_DRACULA, TRAIL_SIZE, &numReturn, &can_free);
+
+
+	for (int i = 0; i < numReturn; i++) {
+		if (trail[i] == MADRID && sq == 0) {
+			return true;
+		} else if (trail[i] == PRAGUE && sq == 1) {
+			return true;
+		} else if (trail[i] == ROME && sq == 2) {
+			return true;
+		}
+	}
+	return false;
 }

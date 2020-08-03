@@ -182,15 +182,18 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 PlaceId DvWhereAmI(DraculaView dv);
 
 PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
-                             int *pathLength);
+                             int *pathLength, bool road, bool boat);
 
-
+/* grabs the number of teleports the Dracula has used through counting the number of TP moves in MoveHistory*/
 int DvNumberOfTeleport(DraculaView dv);
 
-PlaceId TpSequence(PlaceId curr, int sq);
+PlaceId TpSequence(DraculaView dv, PlaceId lastMove, int sq);
 
 bool lastMoveDoubleBack(DraculaView dv);
 
+PlaceId tpHotSpot(DraculaView dv);
+PlaceId DvGetLastMove(DraculaView dv);
+bool atHotSpot(DraculaView dv, int sq);
 
 
 #endif // !defined(FOD__DRACULA_VIEW_H_)

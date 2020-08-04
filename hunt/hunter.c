@@ -27,6 +27,8 @@ Player camper(HunterView hv);
 PlaceId move_to_dracula(HunterView hv);
 PlaceId optimal_move(HunterView hv, PlaceId move);
 Player dracula_chaser(HunterView hv);
+bool valid_move(HunterView hv, char *abbrev);
+char *safety_net(HunterView hv, char *play, PlaceId curr_loc);
 
 void decideHunterMove(HunterView hv)
 {
@@ -36,52 +38,88 @@ void decideHunterMove(HunterView hv)
 	Player curr_player = HvGetPlayer(hv);
 	PlaceId curr_loc = HvGetPlayerLocation(hv, curr_player);
 	Round curr_round = HvGetRound(hv);
+
+ 	/* int round = 0;
+	PlaceId drac = HvGetLastKnownDraculaLocation(hv, &round);
+	printf("%d\n", drac);  
+	
+	PlaceId vamp = HvGetVampireLocation(hv);
+	printf("%d\n", vamp); */
+
 	// spawn locations
 	if (curr_loc == NOWHERE) {
 		if (curr_player == PLAYER_LORD_GODALMING) {
-			play = (char *)placeIdToAbbrev(MILAN);
+			play = placeIdToAbbrev(MILAN);
 		} else if (curr_player == PLAYER_DR_SEWARD) {
-			play = (char *)placeIdToAbbrev(SARAGOSSA);
+			play = placeIdToAbbrev(SARAGOSSA);
 		} else if (curr_player == PLAYER_VAN_HELSING) {
-			play = (char *)placeIdToAbbrev(COLOGNE);
+			play = placeIdToAbbrev(COLOGNE);
 		} else {
-			play = (char *)placeIdToAbbrev(BUCHAREST);
+			play = placeIdToAbbrev(BUCHAREST);
 		}
 		registerBestPlay(play, message);
 		return;
 	} 
-	//printf("%d - camper\n", camper(hv));
+
 	// hunter will research
 	if (should_research(hv) && curr_round >= 6) {
-		play = (char *)placeIdToAbbrev(curr_loc);
+		play = placeIdToAbbrev(curr_loc);
+		registerBestPlay(play, message);
+		return;
 		// printf("research\n");
-	// hunter closest to dracula becomes the main chaser
-	} else if (curr_player == dracula_chaser(hv)) {
+	}
+
+	int round = 0;
+	// dracula has not been revealed yet, go to optimal move
+	if (HvGetLastKnownDraculaLocation(hv, &round) == NOWHERE) {
+		play = placeIdToAbbrev(optimal_move(hv, curr_loc));
+		// if program is messed up and our move is invalid, change 
+		// it to first valid move so we don't get disqualified
+		if (!valid_move(hv, play)) {
+			play = safety_net(hv, play, curr_loc);
+			// printf("ya dun messed up dee nice\n");
+		}
+		// printf("dracula not revealed\n");
+		registerBestPlay(play, message);
+		// printf("test\n");
+		return;
+	}
+
+
+	if (curr_player == dracula_chaser(hv)) {
 		PlaceId next_move =  move_to_dracula(hv);
-		play = (char *)placeIdToAbbrev(next_move);
+		play = placeIdToAbbrev(next_move);
 		// printf("drac chaser\n");
 	// hunter is already at Bucharest, stay 
 	} else if (curr_player == camper(hv) && curr_loc == BUCHAREST) {
-		play = (char *)placeIdToAbbrev(BUCHAREST);
+		play = placeIdToAbbrev(BUCHAREST);
 		// printf("at BC\n");
 	// hunter will move to BUCHAREST to intercept dracula when he spawns
 	} else if (curr_player == camper(hv)) {
 		int path_length = 0;
 
 		PlaceId *locs = HvGetShortestPathTo(hv, curr_player, BUCHAREST, &path_length);
-		play = (char *)placeIdToAbbrev(locs[0]);
+		play = placeIdToAbbrev(locs[0]);
 		// printf("going BC\n");
 	} else {
 		// move towards last known dracula location
 		PlaceId next_move = move_to_dracula(hv);
+
 		// looping to check if previous player has moved towards same city
 		for (int i = 0; i < curr_player; i++) {
 			if (HvGetPlayerLocation(hv, i) == next_move) {
 				next_move = optimal_move(hv, next_move);
 			}
 		}
-		play = (char *)placeIdToAbbrev(next_move);
+		play = placeIdToAbbrev(next_move);
 		// printf("move drac\n");
+	}
+
+	// if program is messed up and our move is invalid, change 
+	// it to first valid move so we don't get disqualified
+	if (!valid_move(hv, play)) {
+		play = safety_net(hv, play, curr_loc);
+		// printf("ya dun messed up a-a-ron\n");
 	}
 	registerBestPlay(play, message);
 }
@@ -107,7 +145,6 @@ bool should_research(HunterView hv) {
 
 // return player which will move to Castle Dracula
 Player camper(HunterView hv) {
-	
 	Player curr_camper = PLAYER_LORD_GODALMING;
 	int shortest_length = MAX_LENGTH;
 	int curr_length = 0;
@@ -186,4 +223,29 @@ Player dracula_chaser(HunterView hv) {
 		}
 	}
 	return dracula_chaser;
+}
+
+// checking if move is valid (checks going to a location adjacent to current location)
+bool valid_move(HunterView hv, char *abbrev) {
+	int num = 0;
+	PlaceId *locs = HvWhereCanIGo(hv, &num);
+	PlaceId place = placeAbbrevToId(abbrev);
+
+	// looping through available locations and seeing if place is a valid place to go
+	for (int i = 0; i < num; i++) {
+		if (place == locs[i]) return true;
+	}
+
+	return false;
+}
+
+// if program is messed up and our move is invalid, change 
+// it to first valid move so we don't get disqualified
+char *safety_net(HunterView hv, char *play, PlaceId curr_loc) {
+	int nums = 0;
+	PlaceId *locs = HvWhereCanIGo(hv, &nums);
+	if (curr_loc != locs[0])
+		return placeIdToAbbrev(locs[0]);
+	else 
+		return placeIdToAbbrev(locs[1]);
 }

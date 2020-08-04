@@ -579,11 +579,14 @@ PlaceId TpHotSpot(DraculaView dv)
 {
 	int numReturn = 0;
 	PlaceId *spot = DvGetValidMoves(dv, &numReturn);
-	if (spot == NULL) {
+	if (numReturn == 0) {
+		free(spot);
 		return TELEPORT;
 	}
-
-	return spot[0];
+	int x = spot[0];
+	free(spot);
+	// printf("%s\n", placeIdToAbbrev(x));
+	return x;
 }
 
 

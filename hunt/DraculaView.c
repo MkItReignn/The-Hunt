@@ -592,15 +592,15 @@ PlaceId TpHotSpot(DraculaView dv)
 		next = TpRandomWalk(dv, curr_loc);
 		break;
 	case MADRID_PATH:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, MADRID);
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, TYRRHENIAN_SEA);
 		else next = TpGetToTail(DvGetLastMove(dv), district);
 		break;
 	case PRAGUE_PATH:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, PRAGUE);
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, ENGLISH_CHANNEL);
 		else next = TpGetToTail(DvGetLastMove(dv), district);
 		break;
 	case VENICE_PATH:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, VENICE);
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, TYRRHENIAN_SEA);
 		else next = TpGetToTail(DvGetLastMove(dv), district);
 		break;
 	case ENGCHA_PATH:
@@ -754,51 +754,43 @@ PlaceId TpGetToTail(PlaceId lastMove, int district) {
 	if (district == MADRID_PATH) {
 		switch (lastMove)
 		{
-		case MADRID:
-			return ALICANTE;
-			break;
-		case ALICANTE:
-			return GRANADA;
-			break;
-		case GRANADA:
-			return CADIZ;	
-			break;	
-		case CADIZ:
-			return DOUBLE_BACK_2;	
-			break;
-		case DOUBLE_BACK_2:
-			return HIDE;
-			break;
-		case HIDE:
-			return TELEPORT;
-			break;
-		default:
-			break;
+			case TYRRHENIAN_SEA:
+				return CAGLIARI;
+				break;
+			case CAGLIARI:
+				return MEDITERRANEAN_SEA;
+			case MEDITERRANEAN_SEA:
+				return DOUBLE_BACK_2;
+				break;
+			case DOUBLE_BACK_2:
+				return HIDE;
+				break;
+			case HIDE:
+				return TELEPORT;
+				break;
+			default:
+				break;
 		}
 	} 
 	else if (district == PRAGUE_PATH) {
 		switch (lastMove)
 		{
-		case PRAGUE:
-			return BERLIN;
-			break;
-		case BERLIN:
-			return LEIPZIG;
-			break;
-		case LEIPZIG:
-			return HAMBURG;
-			break;
-		case HAMBURG:
-			return DOUBLE_BACK_3;
-			break;
-		case DOUBLE_BACK_3:
-			return HIDE;
-			break;
-		case HIDE:
-			return TELEPORT;
-			break;
-		default:
-			break;
+			case ENGLISH_CHANNEL:
+				return PLYMOUTH;
+				break;
+			case PLYMOUTH:
+				return LONDON;
+			case LONDON:
+				return DOUBLE_BACK_2;
+				break;
+			case DOUBLE_BACK_2:
+				return HIDE;
+				break;
+			case HIDE:
+				return TELEPORT;
+				break;
+			default:
+				break;
 		}
 	} else if (district == VENICE_PATH) {
 		switch (lastMove)

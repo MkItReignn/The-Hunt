@@ -654,46 +654,48 @@ PlaceId TpHotSpot(DraculaView dv)
 // CASTLE_DRACULA | GENEVA | KLAUSENBURG | MUNICH | STRASBOURG | SZEGED | ZAGREB
 PlaceId TpRandomWalk(DraculaView dv, PlaceId current)
 {
+	// the 0.7 * acts to provide weighting as we prefer visiting those cities
+	// as they get further away from CD, this is preliminary weight can be changed
 	switch (current)
 	{
 	case CASTLE_DRACULA:
-		if(DvLocationDangerRating(dv, KLAUSENBURG) < DvLocationDangerRating(dv, GALATZ)) 
+		if(0.7 * (DvLocationDangerRating(dv, KLAUSENBURG)) < DvLocationDangerRating(dv, GALATZ)) 
 			return KLAUSENBURG;
 		else 
 			return GALATZ;
 		break;
 	case GENEVA:
-		if(DvLocationDangerRating(dv, CLERMONT_FERRAND) < DvLocationDangerRating(dv, MILAN)) 
+		if(0.7 * (DvLocationDangerRating(dv, CLERMONT_FERRAND)) < DvLocationDangerRating(dv, MILAN)) 
 			return CLERMONT_FERRAND;
 		else 
 			return MILAN;
 		break;
 	case KLAUSENBURG:
-		if(DvLocationDangerRating(dv, SZEGED) < DvLocationDangerRating(dv, BUCHAREST)) 
+		if(0.7 * (DvLocationDangerRating(dv, SZEGED)) < DvLocationDangerRating(dv, BUCHAREST)) 
 			return SZEGED;
 		else 
 			return BUCHAREST;
 		break;
 	case MUNICH:
-		if(DvLocationDangerRating(dv, STRASBOURG) < DvLocationDangerRating(dv, VENICE)) 
+		if(0.7 * (DvLocationDangerRating(dv, STRASBOURG)) < DvLocationDangerRating(dv, VENICE)) 
 			return STRASBOURG;
 		else 
 			return VENICE;
 		break;
 	case STRASBOURG:
-		if(DvLocationDangerRating(dv, GENEVA) < DvLocationDangerRating(dv, BRUSSELS)) 
+		if(0.7 * (DvLocationDangerRating(dv, GENEVA)) < DvLocationDangerRating(dv, BRUSSELS)) 
 			return GENEVA;
 		else 
 			return BRUSSELS;
 		break;
 	case SZEGED:
-		if(DvLocationDangerRating(dv, ZAGREB) < DvLocationDangerRating(dv, BUDAPEST)) 
+		if(0.7 * (DvLocationDangerRating(dv, ZAGREB)) < DvLocationDangerRating(dv, BUDAPEST)) 
 			return ZAGREB;
 		else 
 			return BUDAPEST;
 		break;
 	case ZAGREB:
-		if(DvLocationDangerRating(dv, MUNICH) < DvLocationDangerRating(dv, VIENNA)) 
+		if(0.7 * (DvLocationDangerRating(dv, MUNICH)) < DvLocationDangerRating(dv, VIENNA)) 
 			return MUNICH;
 		else 
 			return VIENNA;

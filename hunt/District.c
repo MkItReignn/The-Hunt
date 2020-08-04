@@ -82,6 +82,7 @@ int DtWhichDistrict(PlaceId pid)
 	if (placeIsReal(pid)) {
 		return DISTRICT[pid].District;
 	}
+	return 0;
 }
 
 bool DtIsHead(PlaceId pid) 
@@ -89,6 +90,7 @@ bool DtIsHead(PlaceId pid)
 	if (placeIsReal(pid)) {
 		return DISTRICT[pid].head;
 	}
+	return false;
 }
 
 bool DtIsOnPath(PlaceId pid) 
@@ -96,4 +98,5 @@ bool DtIsOnPath(PlaceId pid)
 	if (placeIsReal(pid)) {
 		return DISTRICT[pid].path;
 	}
+	return false;
 }

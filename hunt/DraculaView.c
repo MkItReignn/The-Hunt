@@ -613,8 +613,8 @@ PlaceId TpHotSpot(DraculaView dv)
 	}
 
 	// Get all of the valid moves we can make
-	int *num_valid_locs = 0;
-	PlaceId *valid_locs = DvGetValidMoves(dv, num_valid_locs);
+	int num_valid_locs = 0;
+	PlaceId *valid_locs = DvGetValidMoves(dv, &num_valid_locs);
 	// If TpGetToHead fails it returns NOWHERE, in which case make a random move
 	// need better solution
 	if(next == NOWHERE) {
@@ -623,7 +623,7 @@ PlaceId TpHotSpot(DraculaView dv)
 	}
 	// converts a move like HIDE into the actual city, used for comparison
 	PlaceId city_loc = TpMoveToCity(dv, next); 
-	for(int i = 0; i < *num_valid_locs; i++) {
+	for(int i = 0; i < num_valid_locs; i++) {
 		if(city_loc == valid_locs[i]) {
 			free(valid_locs);
 			return next;

@@ -773,15 +773,12 @@ PlaceId TpGetToTail(PlaceId lastMove, int district) {
 	} else if (district == ENGCHA_PATH) {
 		switch (lastMove)
 		{
-			case VENICE:
-				return GENOA;
+			case TYRRHENIAN_SEA:
+				return CAGLIARI;
 				break;
-			case GENOA:
-				return FLORENCE;
-			case FLORENCE:
-				return ROME;
-				break;
-			case ROME:
+			case CAGLIARI:
+				return MEDITERRANEAN_SEA;
+			case MEDITERRANEAN_SEA:
 				return DOUBLE_BACK_2;
 				break;
 			case DOUBLE_BACK_2:

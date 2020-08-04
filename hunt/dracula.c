@@ -24,9 +24,5 @@ void decideDraculaMove(DraculaView dv)
 		play = (char *)placeIdToAbbrev(TpHotSpot(dv));
 	}
 	
-
-
-	
-	
 	registerBestPlay(play, "other");
 }

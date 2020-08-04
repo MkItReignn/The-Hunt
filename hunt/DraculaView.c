@@ -749,7 +749,6 @@ PlaceId TpGetToHead(DraculaView dv, PlaceId head)
 // Function that decides the next best move to get dracula to the "tail" of the
 // teleport route, "tail" is defined as the city dracula is forced to teleport from
 PlaceId TpGetToTail(PlaceId lastMove, int district) {
-	// perhaps i should call DvWhereCanIGo to check if I can't go anywhere, and if that is the case return the move TP
 
 	if (district == MADRID_PATH) {
 		switch (lastMove)
@@ -760,27 +759,6 @@ PlaceId TpGetToTail(PlaceId lastMove, int district) {
 			case CAGLIARI:
 				return MEDITERRANEAN_SEA;
 			case MEDITERRANEAN_SEA:
-				return DOUBLE_BACK_2;
-				break;
-			case DOUBLE_BACK_2:
-				return HIDE;
-				break;
-			case HIDE:
-				return TELEPORT;
-				break;
-			default:
-				break;
-		}
-	} 
-	else if (district == PRAGUE_PATH) {
-		switch (lastMove)
-		{
-			case ENGLISH_CHANNEL:
-				return PLYMOUTH;
-				break;
-			case PLYMOUTH:
-				return LONDON;
-			case LONDON:
 				return DOUBLE_BACK_2;
 				break;
 			case DOUBLE_BACK_2:
@@ -816,6 +794,26 @@ PlaceId TpGetToTail(PlaceId lastMove, int district) {
 				break;
 		}
 	}  else if (district == ENGCHA_PATH) {
+		switch (lastMove)
+		{
+			case ENGLISH_CHANNEL:
+				return PLYMOUTH;
+				break;
+			case PLYMOUTH:
+				return LONDON;
+			case LONDON:
+				return DOUBLE_BACK_2;
+				break;
+			case DOUBLE_BACK_2:
+				return HIDE;
+				break;
+			case HIDE:
+				return TELEPORT;
+				break;
+			default:
+				break;
+		}
+	} else if (district == PRAGUE_PATH) {
 		switch (lastMove)
 		{
 			case ENGLISH_CHANNEL:

@@ -16,7 +16,7 @@
 
 void decideDraculaMove(DraculaView dv)
 {	
-	char *play = "TO";
+	char *play = "MU";
 	// always start at Toulouse - TO
 	if (DvGetRound(dv) == 0) {		
 		registerBestPlay(play, "First Round");	

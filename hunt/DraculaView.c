@@ -589,14 +589,7 @@ PlaceId TpHotSpot(DraculaView dv)
 	switch (district)
 	{
 	case RANDOM_PATH:
-		// to do: try to get to (in order of priority)
-		// 1. GE (MADRID PATH)
-		// 2. ST (ENGLISH CHANNEL PATH)
-		// 3. MU (VENICE PATH)
-		// 4. VI (PRAGUE PATH)
-		// whilst running into min num of hunters 
-		// if hunters are all positioned north-west, head south via sea 
-		// as we want to move them away from CD
+		next = TpRandomWalk(dv, curr_loc);
 		break;
 	case MADRID_PATH:
 		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, MADRID);
@@ -664,37 +657,52 @@ PlaceId TpRandomWalk(DraculaView dv, PlaceId current)
 	switch (current)
 	{
 	case CASTLE_DRACULA:
+		if(DvLocationDangerRating(dv, KLAUSENBURG) < DvLocationDangerRating(dv, GALATZ)) 
+			return KLAUSENBURG;
+		else 
+			return GALATZ;
 		break;
 	case GENEVA:
-		return 
+		if(DvLocationDangerRating(dv, CLERMONT_FERRAND) < DvLocationDangerRating(dv, MILAN)) 
+			return CLERMONT_FERRAND;
+		else 
+			return MILAN;
 		break;
 	case KLAUSENBURG:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, PRAGUE);
-		else next = TpGetToTail(DvGetLastMove(dv), district);
+		if(DvLocationDangerRating(dv, SZEGED) < DvLocationDangerRating(dv, BUCHAREST)) 
+			return SZEGED;
+		else 
+			return BUCHAREST;
 		break;
 	case MUNICH:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, VENICE);
-		else next = TpGetToTail(DvGetLastMove(dv), district);
+		if(DvLocationDangerRating(dv, STRASBOURG) < DvLocationDangerRating(dv, VENICE)) 
+			return STRASBOURG;
+		else 
+			return VENICE;
 		break;
 	case STRASBOURG:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, ENGLISH_CHANNEL);
-		else next = TpGetToTail(DvGetLastMove(dv), district);
+		if(DvLocationDangerRating(dv, GENEVA) < DvLocationDangerRating(dv, BRUSSELS)) 
+			return GENEVA;
+		else 
+			return BRUSSELS;
 		break;
 	case SZEGED:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, VENICE);
-		else next = TpGetToTail(DvGetLastMove(dv), district);
+		if(DvLocationDangerRating(dv, ZAGREB) < DvLocationDangerRating(dv, BUDAPEST)) 
+			return ZAGREB;
+		else 
+			return BUDAPEST;
 		break;
 	case ZAGREB:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, ENGLISH_CHANNEL);
-		else next = TpGetToTail(DvGetLastMove(dv), district);
+		if(DvLocationDangerRating(dv, MUNICH) < DvLocationDangerRating(dv, VIENNA)) 
+			return MUNICH;
+		else 
+			return VIENNA;
 		break;
 	default:
-		// district == -1, i.e. he is at ST JOSPEH ST MARY for some reason
 		break;
 	}
+	return NOWHERE;
 }
-
-
 
 
 // Function that decides the next best move to get dracula to the "head" of the

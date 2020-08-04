@@ -719,16 +719,16 @@ PlaceId TpGetToHead(DraculaView dv, PlaceId head)
 {
  	int path_length_road = 0;
  	int path_length_any = 0;
-	printf("test1\n");
+	// printf("test1\n");
 	PlaceId *path_road = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length_road, true, false);
-	printf("test2\n");
+	// printf("test2\n");
 	PlaceId *path_any = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length_any, true, true);
 
-	printf("1\n");
+	// printf("1\n");
 	// make sure not to enter the path from somewhere thats not the head
 	if(path_length_road > 0 && (!DtIsOnPath(path_road[0]) || DtIsHead(path_road[0]))) return path_road[0];
 	if(path_length_any > 0 && (!DtIsOnPath(path_any[0]) || DtIsHead(path_road[0]))) return path_any[0];
-	printf("2\n");
+	// printf("2\n");
 	// go anywhere thats not on the path, prioritise road over sea
 	int path_length = 0;
 	PlaceId *valid = DvGetValidMoves(dv, &path_length);

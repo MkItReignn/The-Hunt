@@ -354,26 +354,36 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 	}
 }
 
-////////////////////////////////////////////////////////////////////////
-// Your own interface functions
-PlaceId DvWhereAmI(DraculaView dv);
-PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r, bool road, bool boat);
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////// DRACULA AI FUNCTIONS ////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////
+// GET POTENTIAL PATHWAYS FOR PLAYERS
+
 PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
                              int *pathLength, bool road, bool boat);
+PlaceId *DvDraculaBfs(DraculaView dv, Player dracula, PlaceId src, 
+					  Round r, bool road, bool boat);
+PlaceId DvWhereAmI(DraculaView dv);
+int DvLocationDangerRating(DraculaView dv, PlaceId move);
+int DvHowManyHuntersHere(DraculaView dv, PlaceId location);
+int DvHowManyCanGoHere(DraculaView dv, PlaceId location);
+PlaceId *DvGeneralGetValidMoves(DraculaView dv, PlaceId loc, int *numReturnedMoves);
+static void DvGeneraladdLocationMoves(DraculaView dv, PlaceId *moves,
+                             		  PlaceId loc,  int *numReturnedMoves);
+
 // static Round playerNextRound(DraculaView dv, Player player);
-// TODO
 
-PlaceId DvWhereAmI(DraculaView dv)
-{
-	return DvGetPlayerLocation(dv, PLAYER_DRACULA);
-}
-
+// Function that gets the shortest path for Dracula from current place to dest
+// using road and boat only
 PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
                              int *pathLength, bool road, bool boat)
 {
 	Round r = DvGetRound(dv);
 	PlaceId src = DvGetPlayerLocation(dv, dracula);
-	PlaceId *pred = DraculaBfs(dv, dracula, src, r, road, boat);
+	PlaceId *pred = DvDraculaBfs(dv, dracula, src, r, road, boat);
 	
 	// One pass to get the path length
 	int dist = 0;
@@ -398,7 +408,14 @@ PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
 	return path;
 }
 
-PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r, bool road, bool boat) 
+// Function that returns draculas current location
+PlaceId DvWhereAmI(DraculaView dv)
+{
+	return DvGetPlayerLocation(dv, PLAYER_DRACULA);
+}
+
+// Performs breadth first search for a PlaceId starting from current location
+PlaceId *DvDraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r, bool road, bool boat) 
 {
 	PlaceId *pred = malloc(NUM_REAL_PLACES * sizeof(PlaceId));
 	placesFill(pred, NUM_REAL_PLACES, -1);
@@ -435,11 +452,118 @@ PlaceId *DraculaBfs(DraculaView dv, Player dracula, PlaceId src, Round r, bool r
 	return pred;
 }
 
+// Function that generates a danger rating of a location
+int DvLocationDangerRating(DraculaView dv, PlaceId move)
+{
+	// check the direct danger that arises from making the move
+	// i.e. hunters that can reach that location next round 
+	int currently_there = DvHowManyHuntersHere(dv, move);
+	int can_get_there = DvHowManyCanGoHere(dv, move);
+
+	// check danger that may potentially arise in the future
+	// i.e. hunters that can reach places we might go next round
+	int future_danger = 0;
+	int num_locs = 0;
+	PlaceId *future_moves = DvGeneralGetValidMoves(dv, move, &num_locs);
+	for(int i = 0; i < num_locs; i++) {
+		future_danger += DvHowManyHuntersHere(dv, future_moves[i]);
+		future_danger += DvHowManyCanGoHere(dv, future_moves[i]);
+	}
+
+	free(future_moves);
+	// current weighting to total danger, subject to change
+	int total_danger = (currently_there + can_get_there) * 2 + future_danger;
+	
+	return total_danger;
+}
+
+// Returns how many hunters are at a given location
+int DvHowManyHuntersHere(DraculaView dv, PlaceId location)
+{
+	int hunters = 0;
+	for(int i = 0; i < 4; i++) {
+		if(DvGetPlayerLocation(dv, i) == location) hunters++;
+	}
+	return hunters;
+}
+
+// Returns how many hunters can get to a given location
+int DvHowManyCanGoHere(DraculaView dv, PlaceId location)
+{
+	int hunters = 0;
+
+	int num_g = 0; PlaceId *locs_g = DvWhereCanTheyGo(dv, PLAYER_LORD_GODALMING, &num_g);
+	int num_s = 0; PlaceId *locs_s = DvWhereCanTheyGo(dv, PLAYER_DR_SEWARD, &num_s);
+	int num_h = 0; PlaceId *locs_h = DvWhereCanTheyGo(dv, PLAYER_VAN_HELSING, &num_h);
+	int num_m = 0; PlaceId *locs_m = DvWhereCanTheyGo(dv, PLAYER_MINA_HARKER, &num_m);
+
+	for(int i = 0; i < num_g; i++) {
+		if(locs_g[i] == location) hunters++;
+	}
+	for(int i = 0; i < num_s; i++) {
+		if(locs_s[i] == location) hunters++;
+	}
+	for(int i = 0; i < num_h; i++) {
+		if(locs_h[i] == location) hunters++;
+	}
+	for(int i = 0; i < num_m; i++) {
+		if(locs_m[i] == location) hunters++;
+	}
+
+	free(locs_g);
+	free(locs_s);
+	free(locs_h);
+	free(locs_m);
+	
+	return hunters;
+}
+
+// Returns location of all valid moves from a given location instead of dracs
+// current location
+PlaceId *DvGeneralGetValidMoves(DraculaView dv, PlaceId loc, int *numReturnedMoves)
+{
+	if (loc == NOWHERE) {
+		*numReturnedMoves = 0;
+		return NULL;
+	}
+
+	// There can't be more than NUM_REAL_PLACES
+	// valid moves
+	PlaceId *moves = malloc(NUM_REAL_PLACES * sizeof(PlaceId));
+	assert(moves != NULL);
+	
+	// Get the locations that Dracula can reach from a given location
+	*numReturnedMoves = 0;
+	DvGeneraladdLocationMoves(dv, moves, loc, numReturnedMoves);
+	return moves;
+}
+
+// Returns location of all valid moves from a given location instead of dracs
+// current location
+static void DvGeneraladdLocationMoves(DraculaView dv, PlaceId *moves,
+                             		  PlaceId loc,  int *numReturnedMoves) 
+{
+	// Get the locations that Dracula can reach from a given location
+	int numLocs = 0;
+	PlaceId *locs = GvGetReachable(dv->gv, PLAYER_DRACULA, 1,
+	                               loc, &numLocs);
+	
+	// For each location, check if it's a legal move, and add it to the
+	// moves array if so
+	for (int i = 0; i < numLocs; i++) {
+		if (moveIsLegal(dv, locs[i])) {
+			moves[(*numReturnedMoves)++] = locs[i];
+		}
+	}
+	
+	free(locs);
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
-///////////// GET NEXT MOVE
+// GET NEXT MOVE
 PlaceId TpHotSpot(DraculaView dv);
+PlaceId TpRandomWalk(DraculaView dv, PlaceId current);
 PlaceId TpGetToHead(DraculaView dv, PlaceId head);
 PlaceId TpGetToTail(PlaceId lastMove, int district);
 PlaceId DvGetLastMove(DraculaView dv);
@@ -491,26 +615,86 @@ PlaceId TpHotSpot(DraculaView dv)
 		else next = TpGetToTail(DvGetLastMove(dv), district);
 		break;
 	default:
+		// district == -1, i.e. he is at ST JOSPEH ST MARY for some reason
 		break;
 	}
 
 	// Get all of the valid moves we can make
 	int *num_valid_locs = 0;
-	PlaceId *valid_locs = DvWhereCanIGo(dv, num_valid_locs);
+	PlaceId *valid_locs = DvGetValidMoves(dv, num_valid_locs);
 	// If TpGetToHead fails it returns NOWHERE, in which case make a random move
 	// need better solution
-	if(next == NOWHERE) return valid_locs[0]; 
-
+	if(next == NOWHERE) {
+		free(valid_locs);
+		return valid_locs[0]; 
+	}
 	// converts a move like HIDE into the actual city, used for comparison
 	PlaceId city_loc = MoveToCity(dv, next); 
 	for(int i = 0; i < num_valid_locs; i++) {
-		if(city_loc == valid_locs[i]) return next;
+		if(city_loc == valid_locs[i]) {
+			free(valid_locs);
+			return next;
+		}
 	}
 
+	PlaceId next_move = valid_locs[0];
+	free(valid_locs);
 	// if this happens then we are kinda screwed for the rest of the game
 	// need a new back up for this return, maybe store in the struct
-	return valid_locs[0];
+	return next_move;
 }
+
+
+// Function that lets dracula wander on a path where cities are not in any district
+// i.e. neutral zones; When dracula senses that he is probable to encounter hunters
+// in a sufficiently small number of rounds, he enters a zone which will subsequently
+// lead to teleporting. 
+
+// The places he is trying to reach on this walk are prioritised in the following manner
+	// 1. GE (MADRID PATH)
+	// 2. ST (ENGLISH CHANNEL PATH)
+	// 3. MU (VENICE PATH)
+	// 4. VI (PRAGUE PATH)
+	// 5. if hunters are all near CD, head south via sea 
+
+// Places considered "neutral zones" where he can make decisions: 
+// CASTLE_DRACULA | GENEVA | KLAUSENBURG | MUNICH | STRASBOURG | SZEGED | ZAGREB
+PlaceId TpRandomWalk(DraculaView dv, PlaceId current)
+{
+	switch (current)
+	{
+	case CASTLE_DRACULA:
+		break;
+	case GENEVA:
+		return 
+		break;
+	case KLAUSENBURG:
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, PRAGUE);
+		else next = TpGetToTail(DvGetLastMove(dv), district);
+		break;
+	case MUNICH:
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, VENICE);
+		else next = TpGetToTail(DvGetLastMove(dv), district);
+		break;
+	case STRASBOURG:
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, ENGLISH_CHANNEL);
+		else next = TpGetToTail(DvGetLastMove(dv), district);
+		break;
+	case SZEGED:
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, VENICE);
+		else next = TpGetToTail(DvGetLastMove(dv), district);
+		break;
+	case ZAGREB:
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, ENGLISH_CHANNEL);
+		else next = TpGetToTail(DvGetLastMove(dv), district);
+		break;
+	default:
+		// district == -1, i.e. he is at ST JOSPEH ST MARY for some reason
+		break;
+	}
+}
+
+
 
 
 // Function that decides the next best move to get dracula to the "head" of the
@@ -527,12 +711,15 @@ PlaceId TpGetToHead(DraculaView dv, PlaceId head)
 	if(!DtIsOnPath(path_any[0])) return path_any[0];
 
 	// go anywhere thats not on the path, prioritise road over sea
-	PlaceId *valid = DvWhereCanIGo(dv, &path_length);
+	PlaceId *valid = DvGetValidMoves(dv, &path_length);
 	PlaceId valid_boat = NOWHERE;
 	for(int i = 0; i < path_length; i++) {
 		if(!DtIsOnPath(valid[i])) {
 			if(!placeIsSea(valid[i])) {
 				// return the first valid location thats not at sea
+				free(path_road);
+				free(path_any);
+				free(valid);
 				return valid[i];
 			} else {
 				// store sea location incase no land is found
@@ -541,6 +728,9 @@ PlaceId TpGetToHead(DraculaView dv, PlaceId head)
 		}
 	}
 
+	free(path_road);
+	free(path_any);
+	free(valid);
 	// no valid boat was found and nowhere is returned, we are forced to do 
 	// an early entry into the path which means we are kinda screwed, need solution
 	return valid_boat;

@@ -567,7 +567,7 @@ PlaceId TpRandomWalk(DraculaView dv, PlaceId current);
 PlaceId TpGetToHead(DraculaView dv, PlaceId head);
 PlaceId TpGetToTail(PlaceId lastMove, int district);
 PlaceId DvGetLastMove(DraculaView dv);
-PlaceId TpMoveToCity(DraculaView dv, PlaceId move); 
+PlaceId TpMoveToCity(DraculaView dv, PlaceId move);
 
 // Function that decides the next best move, based on the current location of
 // dracula, he moves towards one of four cities using routes that force him
@@ -622,8 +622,8 @@ PlaceId TpHotSpot(DraculaView dv)
 		return valid_locs[0]; 
 	}
 	// converts a move like HIDE into the actual city, used for comparison
-	PlaceId city_loc = MoveToCity(dv, next); 
-	for(int i = 0; i < num_valid_locs; i++) {
+	PlaceId city_loc = TpMoveToCity(dv, next); 
+	for(int i = 0; i < *num_valid_locs; i++) {
 		if(city_loc == valid_locs[i]) {
 			free(valid_locs);
 			return next;

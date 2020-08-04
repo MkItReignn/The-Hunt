@@ -592,19 +592,19 @@ PlaceId TpHotSpot(DraculaView dv)
 		next = TpRandomWalk(dv, curr_loc);
 		break;
 	case MADRID_PATH:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, TYRRHENIAN_SEA);
-		else next = TpGetToTail(DvGetLastMove(dv), district);
-		break;
-	case PRAGUE_PATH:
 		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, ENGLISH_CHANNEL);
-		else next = TpGetToTail(DvGetLastMove(dv), district);
-		break;
-	case VENICE_PATH:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, TYRRHENIAN_SEA);
 		else next = TpGetToTail(DvGetLastMove(dv), district);
 		break;
 	case ENGCHA_PATH:
 		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, ENGLISH_CHANNEL);
+		else next = TpGetToTail(DvGetLastMove(dv), district);
+		break;
+	case PRAGUE_PATH:
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, TYRRHENIAN_SEA);
+		else next = TpGetToTail(DvGetLastMove(dv), district);
+		break;
+	case VENICE_PATH:
+		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, TYRRHENIAN_SEA);
 		else next = TpGetToTail(DvGetLastMove(dv), district);
 		break;
 	default:
@@ -770,7 +770,7 @@ PlaceId TpGetToTail(PlaceId lastMove, int district) {
 			default:
 				break;
 		}
-	} else if (district == VENICE_PATH) {
+	} else if (district == ENGCHA_PATH) {
 		switch (lastMove)
 		{
 			case VENICE:
@@ -793,7 +793,7 @@ PlaceId TpGetToTail(PlaceId lastMove, int district) {
 			default:
 				break;
 		}
-	}  else if (district == ENGCHA_PATH) {
+	}  else if (district == VENICE_PATH) {
 		switch (lastMove)
 		{
 			case ENGLISH_CHANNEL:

@@ -16,17 +16,13 @@
 
 void decideDraculaMove(DraculaView dv)
 {	
-	char *play;
+	char *play = "TO";
 	// always start at Toulouse - TO
 	if (DvGetRound(dv) == 0) {		
-		registerBestPlay("TO", "First Round");	
+		registerBestPlay(play, "First Round");	
 	} else  {
-		play = (char *)placeIdToAbbrev(tpHotSpot(dv));
+		play = placeIdToAbbrev(TpHotSpot(dv));
 	}
-	
-
-
-	
 	
 	registerBestPlay(play, "other");
 }

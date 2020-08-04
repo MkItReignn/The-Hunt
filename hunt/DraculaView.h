@@ -176,24 +176,24 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
                                 int *numReturnedLocs);
 
 ////////////////////////////////////////////////////////////////////////
-// Your own interface functions
-
-// TODO
+// Our Functions
+/* 
+ * Returns Draculas current location
+*/
 PlaceId DvWhereAmI(DraculaView dv);
 
+/* 
+ * Returns shortest path dracula can take, allows for choices between modes of
+ * transport, similar to HvGetShortestPath
+*/
 PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
                              int *pathLength, bool road, bool boat);
 
-/* grabs the number of teleports the Dracula has used through counting the number of TP moves in MoveHistory*/
-int DvNumberOfTeleport(DraculaView dv);
-
-PlaceId TpSequence(DraculaView dv, PlaceId lastMove, int sq);
-
-bool lastMoveDoubleBack(DraculaView dv);
-
-PlaceId tpHotSpot(DraculaView dv);
-PlaceId DvGetLastMove(DraculaView dv);
-bool atHotSpot(DraculaView dv, int sq);
-
+/* 
+ * Function that implements our game strategy for dracula, it essentially 
+ * makes Dracula move to one of 4 different spots that force him to teleport
+ * and which spot he goes to depends on the area he is in
+*/
+PlaceId TpHotSpot(DraculaView dv);
 
 #endif // !defined(FOD__DRACULA_VIEW_H_)

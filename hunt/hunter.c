@@ -36,7 +36,13 @@ void decideHunterMove(HunterView hv)
 	Player curr_player = HvGetPlayer(hv);
 	PlaceId curr_loc = HvGetPlayerLocation(hv, curr_player);
 	Round curr_round = HvGetRound(hv);
-	// spawn locations
+
+	int curr_health = HvGetScore(hv);
+	// hunter has died
+	if (curr_health <= 0) {
+		play = (char *)placeIdToAbbrev(ST_JOSEPH_AND_ST_MARY);
+	}
+	// inital hunter locations
 	if (curr_loc == NOWHERE) {
 		if (curr_player == PLAYER_LORD_GODALMING) {
 			play = (char *)placeIdToAbbrev(MILAN);
@@ -67,7 +73,6 @@ void decideHunterMove(HunterView hv)
 	// hunter will move to BUCHAREST to intercept dracula when he spawns
 	} else if (curr_player == camper(hv)) {
 		int path_length = 0;
-
 		PlaceId *locs = HvGetShortestPathTo(hv, curr_player, BUCHAREST, &path_length);
 		play = (char *)placeIdToAbbrev(locs[0]);
 		// printf("going BC\n");
@@ -103,8 +108,6 @@ bool should_research(HunterView hv) {
 	} else {
 		return true;
 	}
-	
-	
 }
 
 // return player which will move to Castle Dracula

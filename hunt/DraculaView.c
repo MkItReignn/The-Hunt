@@ -624,7 +624,7 @@ PlaceId TpHotSpot(DraculaView dv)
 	// converts a move like HIDE into the actual city, used for comparison
 	PlaceId city_loc = TpMoveToCity(dv, next); 
 	for(int i = 0; i < num_valid_locs; i++) {
-		if(city_loc == valid_locs[i]) {
+		if(city_loc == TpMoveToCity(valid_locs[i])) {
 			free(valid_locs);
 			return next;
 		}

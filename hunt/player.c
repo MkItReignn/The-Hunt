@@ -86,13 +86,10 @@ typedef HunterView View;
 
 int main(void)
 {
-	char *pastPlays =  "GZA.... SED.... HZU.... MZU.... DTO.V.. "
-					"GZA.... SED.... HZU.... MZU.... DSR.... "
-					"GZA.... SED.... HZU.... MZU.... DMA.... "
-					"GZA.... SED.... HZU.... MZU.... DAL.... "
-					"GZA.... SED.... HZU.... MZU.... DGR.... "
-					"GZA.... SED.... HZU.... MZU.... DCA.... "
-					"GZA.... SED.... HZU.... MZU.... DD1....";
+	char *pastPlays = /* "GMI.... SSR.... HCO.... MBC.... DC?.V.. GVE.... SAL.... "
+					"HMR.... MBC.... DC?T... GAS.... SMS.... HGO.... MBC.... DC?T... "
+					"GBI.... SAL.... HMI...."; */
+					"GMI.... SSR.... HCO.... MBC.... DC?.V.. GVE.... SAL.... HMR.... MBC.... DC?T... GAS.... SMS.... HGO.... MBC.... DC?T...";
 	Message msgs[] = xMsgs;
 
 	View state = ViewNew(pastPlays, msgs);

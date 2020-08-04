@@ -712,15 +712,17 @@ PlaceId TpRandomWalk(DraculaView dv, PlaceId current)
 // teleporting
 PlaceId TpGetToHead(DraculaView dv, PlaceId head)
 {
- 	int path_length = 0;
-	PlaceId *path_road = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length, true, false);
-	PlaceId *path_any = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length, true, true);
+ 	int path_length_road = 0;
+ 	int path_length_any = 0;
+	PlaceId *path_road = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length_road, true, false);
+	PlaceId *path_any = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length_any, true, true);
 
 	// make sure not to enter the path from somewhere thats not the head
-	if(!DtIsOnPath(path_road[0]) || DtIsHead(path_road[0])) return path_road[0];
-	if(!DtIsOnPath(path_any[0]) || DtIsHead(path_road[0])) return path_any[0];
+	if(path_length_road > 1 || (!DtIsOnPath(path_road[0]) || DtIsHead(path_road[0]))) return path_road[0];
+	if(path_length_any > 1 || (!DtIsOnPath(path_any[0]) || DtIsHead(path_road[0]))) return path_any[0];
 
 	// go anywhere thats not on the path, prioritise road over sea
+	int path_length = 0;
 	PlaceId *valid = DvGetValidMoves(dv, &path_length);
 	PlaceId valid_boat = NOWHERE;
 	for(int i = 0; i < path_length; i++) {

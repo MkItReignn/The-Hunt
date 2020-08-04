@@ -717,8 +717,8 @@ PlaceId TpGetToHead(DraculaView dv, PlaceId head)
 	PlaceId *path_any = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length, true, true);
 
 	// make sure not to enter the path from somewhere thats not the head
-	if(!DtIsOnPath(path_road[0])) return path_road[0];
-	if(!DtIsOnPath(path_any[0])) return path_any[0];
+	if(!DtIsOnPath(path_road[0]) || DtIsHead(path_road[0])) return path_road[0];
+	if(!DtIsOnPath(path_any[0]) || DtIsHead(path_road[0])) return path_any[0];
 
 	// go anywhere thats not on the path, prioritise road over sea
 	PlaceId *valid = DvGetValidMoves(dv, &path_length);

@@ -577,64 +577,13 @@ PlaceId TpMoveToCity(DraculaView dv, PlaceId move);
 // our function is not able to recover
 PlaceId TpHotSpot(DraculaView dv) 
 {
-	// move from current location to tp hot spot location dependent on which sequence to employ
-	PlaceId curr_loc = DvGetPlayerLocation(dv, PLAYER_DRACULA);
-	int district = DtWhichDistrict(curr_loc);
-	PlaceId next = NOWHERE;
-
-	// Note: "tail" refers to the endpoint i.e. place we teleport, and "head"
-	// refers to the starting point of predetermined routes that force teleporting,
-	// "path" refers to that cities that are on the abovementioned route which
-	// need to be avoided prior to getting to the head
-	switch (district)
-	{
-	case RANDOM_PATH:
-		next = TpRandomWalk(dv, curr_loc);
-		break;
-	case MADRID_PATH:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, MADRID);
-		else next = TpGetToTail(DvGetLastMove(dv), district);
-		break;
-	case PRAGUE_PATH:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, PRAGUE);
-		else next = TpGetToTail(DvGetLastMove(dv), district);
-		break;
-	case VENICE_PATH:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, VENICE);
-		else next = TpGetToTail(DvGetLastMove(dv), district);
-		break;
-	case ENGCHA_PATH:
-		if (!DtIsOnPath(curr_loc)) next = TpGetToHead(dv, ENGLISH_CHANNEL);
-		else next = TpGetToTail(DvGetLastMove(dv), district);
-		break;
-	default:
-		// district == -1, i.e. he is at ST JOSPEH ST MARY for some reason
-		break;
+	int numReturn = 0;
+	PlaceId *spot = DvGetValidMoves(dv, &numReturn);
+	if (spot == NULL) {
+		return TELEPORT;
 	}
 
-	// Get all of the valid moves we can make
-	int num_valid_locs = 0;
-	PlaceId *valid_locs = DvGetValidMoves(dv, &num_valid_locs);
-	// If TpGetToHead fails it returns NOWHERE, in which case make a random move
-	// need better solution
-	if(next == NOWHERE) {
-		free(valid_locs);
-		return valid_locs[0]; 
-	}
-	// converts a move like HIDE into the actual city, used for comparison
-	PlaceId city_loc = TpMoveToCity(dv, next); 
-	for(int i = 0; i < num_valid_locs; i++) {
-		if(city_loc == TpMoveToCity(dv, valid_locs[i])) {
-			free(valid_locs);
-			return next;
-		}
-	}
-
-	PlaceId next_move = valid_locs[0];
-	free(valid_locs);
-	// if this happens then we are kinda screwed for the rest of the game
-	// need a new back up for this return, maybe store in the struct
-	return next_move;
+	return spot[0];
 }
 
 

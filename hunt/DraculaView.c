@@ -760,9 +760,12 @@ PlaceId TpGetToTail(PlaceId lastMove, int district) {
 		case ALICANTE:
 			return GRANADA;
 			break;
+		case GRANADA:
+			return CADIZ;	
+			break;	
 		case CADIZ:
 			return DOUBLE_BACK_2;	
-			break;	
+			break;
 		case DOUBLE_BACK_2:
 			return HIDE;
 			break;

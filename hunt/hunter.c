@@ -132,13 +132,16 @@ bool should_research(HunterView hv) {
 
 	// check location of dracula
 	if (HvGetLastKnownDraculaLocation(hv, &round) != NOWHERE) {
-		// returning true if seen in last 3 rounds, else false
-		if (curr_round - round >= 3) {
+		// return true if haven't seen dracula in at least 10 or more rounds
+		if (curr_round - round >= 10) {
+			// printf("1\n");
 			return true;
 		} else {
+			// printf("2\n");
 			return false;
-		} 
+		}
 	} else {
+		// printf("3\n");
 		return true;
 	}
 }

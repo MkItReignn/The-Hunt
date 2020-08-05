@@ -471,6 +471,9 @@ int DvLocationDangerRating(DraculaView dv, PlaceId move)
 	int num_locs = 0;
 	PlaceId *future_moves = DvGeneralGetValidMoves(dv, move, &num_locs);
 	for(int i = 0; i < num_locs; i++) {
+		// if (SEA != placeIdToType(resolveDraculaMove(dv->gv, future_moves[i]))) {
+		// 	future_danger += 2;
+		// }
 		future_danger += DvHowManyHuntersHere(dv, future_moves[i]);
 		future_danger += DvHowManyCanGoHere(dv, future_moves[i]);
 	}
@@ -583,15 +586,46 @@ PlaceId TpMoveToCity(DraculaView dv, PlaceId move);
 PlaceId TpHotSpot(DraculaView dv) 
 {
 	int numReturn = 0;
+	/*  */
+	// get all the valid moves, and choose a path that is not the sea
 	PlaceId *spot = DvGetValidMoves(dv, &numReturn);
+	
 	if (numReturn == 0) {
 		free(spot);
 		return TELEPORT;
 	}
-	int x = spot[0];
+	// make array of danger ratings
+	int danger_rating_array[numReturn];
+	for (int k = 0; k < numReturn; k++) {
+		// printf("\n%s\n", placeIdToAbbrev(spot[k]));
+		danger_rating_array[k] = DvLocationDangerRating(dv, resolveDraculaMove(dv->gv, spot[k]));
+		// printf("here\n");
+	}
+	// printf("here\n");
+	// choosing the first path that is not the sea
+	// change the move to a locaiton just in case
+	
+	int lowest_rating = danger_rating_array[0];
+	int lowest_rating_any = 0, lowest_rating_not_sea = -99;
+
+	for (int i = 0; i < numReturn; i++) {
+		if (danger_rating_array[i] <= lowest_rating /*&& SEA != placeIdToType(resolveDraculaMove(dv->gv, spot[i]))*/) {
+			lowest_rating = danger_rating_array[i];
+			lowest_rating_any = i;
+		}
+		// if the place is not the sea, switch lowest_rating_not_sea index
+		if (SEA != placeIdToType(resolveDraculaMove(dv->gv, spot[lowest_rating_any]))) {
+			lowest_rating_not_sea = lowest_rating_any;
+		}
+	}
+
+	
+
+	int x = (lowest_rating_not_sea != -99) ? spot[lowest_rating_not_sea] : spot[lowest_rating_any];
+	// x = spot[lowest_rating_any];
 	free(spot);
-	
-	
+	// printf("\n%s\n", placeIdToAbbrev(x));
+
 	return x;
 }
 
@@ -818,20 +852,21 @@ PlaceId TpMoveToCity(DraculaView dv, PlaceId move)
 	// then our code breaks lol
 	int numReturn = 0;
 	bool canFree = false;
-	PlaceId *trail = GvGetLastMoves(dv->gv, PLAYER_DRACULA, 5, &numReturn, &canFree);
-
+	PlaceId *trail = GvGetLastLocations(dv->gv, PLAYER_DRACULA, TRAIL_SIZE, &numReturn, &canFree);
+	
 	if(move == HIDE) {
-		return trail[4];
+		// printf("\n%s\n", placeIdToAbbrev(trail[TRAIL_SIZE - 1]));
+		return trail[TRAIL_SIZE - 1];
 	} else if(move == DOUBLE_BACK_1) {
-		return trail[4];	
+		return trail[TRAIL_SIZE - 1];	
 	} else if(move == DOUBLE_BACK_2) {
-		return trail[3];	
+		return trail[TRAIL_SIZE - 2];	
 	} else if(move == DOUBLE_BACK_3) {
-		return trail[2];
+		return trail[TRAIL_SIZE - 3];
 	} else if(move == DOUBLE_BACK_4) {
-		return trail[1];
+		return trail[TRAIL_SIZE - 4];
 	} else if(move == DOUBLE_BACK_5) {
-		return trail[0];	
+		return trail[TRAIL_SIZE - 5];	
 	}
 
 	return move;

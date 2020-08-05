@@ -258,7 +258,8 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 
 
 // int GvNumberOfTeleport(GameView gv);
-
+/* translates a dracula move to a real location */
+PlaceId resolveDraculaMove(GameView gv, PlaceId move);
 
 
 #endif // !defined (FOD__GAME_VIEW_H_)

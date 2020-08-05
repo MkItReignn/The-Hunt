@@ -93,7 +93,10 @@ static void    processTurn(GameView gv, Turn turn);
 
 static void    processDraculaTurn(GameView gv, Turn turn);
 static void    processDraculaMove(GameView gv, Turn turn);
-static PlaceId resolveDraculaMove(GameView gv, PlaceId move);
+/**
+ * MADE THIS STATIC FUNCTION NON-STATIC
+ */
+PlaceId resolveDraculaMove(GameView gv, PlaceId move);
 static void    processDraculaActions(GameView gv, Turn turn);
 static void    processTrapPlaced(GameView gv);
 static void    processVampirePlaced(GameView gv);
@@ -302,7 +305,7 @@ static void processDraculaMove(GameView gv, Turn turn) {
 	gv->draculaLocationHistory[gv->round] = gv->playerLocations[PLAYER_DRACULA];
 }
 
-static PlaceId resolveDraculaMove(GameView gv, PlaceId move) {
+PlaceId resolveDraculaMove(GameView gv, PlaceId move) {
 	if (placeIsReal(move) || move == CITY_UNKNOWN || move == SEA_UNKNOWN) {
 		return move;
 	}

@@ -86,10 +86,8 @@ typedef HunterView View;
 
 int main(void)
 {
-	char *pastPlays = /* "GMI.... SSR.... HCO.... MBC.... DC?.V.. GVE.... SAL.... "
-					"HMR.... MBC.... DC?T... GAS.... SMS.... HGO.... MBC.... DC?T... "
-					"GBI.... SAL.... HMI...."; */
-					"GMI.... SSR.... HCO.... MBC.... DZA.V.. GFL.... SAL.... HBR.... MBE.... DBDT... GGE.... SBA.... HHA.... MSO.... DKLT... GFL.... SMS.... HBR.... MBE.... DBET... GVE.... STS.... HVI....";
+	char *pastPlays = "GMI.... SSR.... HCO.... MBC.... DZA.V.. GFL.... SAL.... HBR.... MBE.... DMUT... GGE.... SBA.... HHA.... MSO.... DVIT... GFL.... SMS.... HBR.... MBE.... DD1T... GGO.... SAL.... HFR.... MBC.... DBDT... GMI.... SBA.... HBR.... MBE.... DHIT... GMI.... SBA.... HBR.... MBE.... DZAT.V. GMUT... SMS.... HLI.... MBC.... DSJT... GMI.... SMR.... HMU.... MVITT.. DBET... GMU.... SMI.... HVI.... MBDTT.. DSOT... GVE.... SMU.... HBD.... MKL.... DSAT... GBD.... SVI.... HKL.... MBET... DIO.... GKL.... SBD.... HBE.... MJM.... DAS..M. GBE.... SBC.... HBC.... MJM.... DBI.VM. GBC.... SBE.... HBC.... MJM.... DNPT... GBE.... SBC.... HCN.... MJM.... DROT.M. GBC.... SBE.... HCN.... MJM.... DFLT.M. GBE.... SBC.... HBE.... MJM.... DGOT... GBE.... SBC.... HBE.... MJM.... DMRT... GSA.... SCN.... HBC.... MSZ.... DCFT.V. GIO.... SBS.... HBD.... MVE.... DBOT.M. GAS.... SIO.... HVE.... MAS.... DBB..M. GAS.... SIO.... HVE.... MAS.... DAO..M. GVE.... SAS.... HFL.... MBI.... DCAT.M. GFL.... SVE.... HGE.... MBI.... DGRT.M. GGO.... SFL.... HGE.... MRO.... DALT.M. GGO.... SFL.... HGE.... MRO.... DMA.VM. GGE.... SGO.... HCF.... MFL.... DLST... GCF.... SMR.... HBO.... MGE.... DAO.... GBO.... SBU.... HALT... MMR.... DCAT.M. GBA.... SSR.... HGRT... MMS.... DD2.... GAL.... SSR.... HGR.... MMS.... DBB.... GGR.... SAL.... HGR.... MMS.... DBOT.V. GAL.... SBA.... HGR.... MMS.... DNAT.M. GBA.... SAL.... HGR.... MMS.... DCFT... GBA.... SAL.... HCAT... MAO.... DGET... GMS.... SGR.... HAO.... MCA.... DPAT... GAO.... SCA.... HAO.... MAO.... DBUT... GCA.... SAO.... HBB.... MAO.... DAMT.M. GCA.... SAO.... HBB.... MAO.... DCO.VM. GAO.... SBB.... HNA.... MAO.... DFRT.M. GBB.... SNA.... HBB.... MAO.... DLIT.M. GNA.... SBB.... HAO.... MBB.... DBRT.M. GNA.... SBB.... HAO.... MBB.... DHAT.M. GLE.... SBO.... HEC.... MNA.... DD2T.M. GBU.... SBA.... HLE.... MNA....";
+
 	Message msgs[] = xMsgs;
 
 	View state = ViewNew(pastPlays, msgs);

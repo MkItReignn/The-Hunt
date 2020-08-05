@@ -29,22 +29,17 @@ PlaceId optimal_move(HunterView hv, PlaceId move);
 Player dracula_chaser(HunterView hv);
 bool valid_move(HunterView hv, char *abbrev);
 char *safety_net(HunterView hv, char *play, PlaceId curr_loc);
+PlaceId move_to_vamp (HunterView hv);
+PlaceId no_stacking(HunterView hv, PlaceId next_move, Player curr_player);
 
 void decideHunterMove(HunterView hv)
 {
 	char *play;
-	char *message = "\0";
+	char *message;
 
 	Player curr_player = HvGetPlayer(hv);
 	PlaceId curr_loc = HvGetPlayerLocation(hv, curr_player);
 	Round curr_round = HvGetRound(hv);
-
- 	/* int round = 0;
-	PlaceId drac = HvGetLastKnownDraculaLocation(hv, &round);
-	printf("%d\n", drac);  
-	
-	PlaceId vamp = HvGetVampireLocation(hv);
-	printf("%d\n", vamp); */
 
 	// spawn locations
 	if (curr_loc == NOWHERE) {
@@ -57,6 +52,7 @@ void decideHunterMove(HunterView hv)
 		} else {
 			play = placeIdToAbbrev(BUCHAREST);
 		}
+		message = "spawn location";
 		registerBestPlay(play, message);
 		return;
 	} 
@@ -64,64 +60,56 @@ void decideHunterMove(HunterView hv)
 	// hunter will research
 	if (should_research(hv) && curr_round >= 6) {
 		play = placeIdToAbbrev(curr_loc);
+		message = "researching";
 		registerBestPlay(play, message);
 		return;
-		// printf("research\n");
 	}
 
 	int round = 0;
 	// dracula has not been revealed yet, go to optimal move
 	if (HvGetLastKnownDraculaLocation(hv, &round) == NOWHERE) {
-		play = placeIdToAbbrev(optimal_move(hv, curr_loc));
+		PlaceId vamp_loc = HvGetVampireLocation(hv); 
+		if (vamp_loc >= ADRIATIC_SEA && vamp_loc <= ZURICH) {
+			PlaceId next_move = move_to_vamp(hv);
+			printf("fkwef\n");
+			PlaceId real_move = no_stacking(hv, next_move, curr_player);
+			printf("fkw2121ef\n");
+			play = placeIdToAbbrev(real_move);
+			message = "chasing vampire";
+		} else {
+			play = placeIdToAbbrev(optimal_move(hv, curr_loc));
+			message = "unrevealed optimal move";
+		}  
+		
 		// if program is messed up and our move is invalid, change 
 		// it to first valid move so we don't get disqualified
 		if (!valid_move(hv, play)) {
 			play = safety_net(hv, play, curr_loc);
-			// printf("ya dun messed up dee nice\n");
+			message = "safety net 1";
 		}
-		// printf("dracula not revealed\n");
 		registerBestPlay(play, message);
-		// printf("test\n");
 		return;
 	}
-
 
 	if (curr_player == dracula_chaser(hv)) {
 		PlaceId next_move =  move_to_dracula(hv);
 		play = placeIdToAbbrev(next_move);
-		// printf("drac chaser\n");
-	// hunter is already at Bucharest, stay 
-	} 
-	// else if (curr_player == camper(hv) && curr_loc == BUCHAREST) {
-	// 	play = placeIdToAbbrev(BUCHAREST);
-	// 	// printf("at BC\n");
-	// // hunter will move to BUCHAREST to intercept dracula when he spawns
-	// } else if (curr_player == camper(hv)) {
-	// 	int path_length = 0;
-
-	// 	PlaceId *locs = HvGetShortestPathTo(hv, curr_player, BUCHAREST, &path_length);
-	// 	play = placeIdToAbbrev(locs[0]);
-	// 	// printf("going BC\n");
-	// } 
-	else {
+		message = "dracula chaser";
+	} else {
 		// move towards last known dracula location
 		PlaceId next_move = move_to_dracula(hv);
-
-		// looping to check if previous player has moved towards same city
-		for (int i = 0; i < curr_player; i++) {
-			if (HvGetPlayerLocation(hv, i) == next_move) {
-				next_move = optimal_move(hv, next_move);
-			}
-		}
-		play = placeIdToAbbrev(next_move);
-		// printf("move drac\n");
+		PlaceId real_move = no_stacking(hv, next_move, curr_player);
+		message = "move closer to dracula";
+		play = placeIdToAbbrev(real_move);
 	}
 
 	// if program is messed up and our move is invalid, change 
 	// it to first valid move so we don't get disqualified
 	if (!valid_move(hv, play)) {
+		
+		//message = play;
 		play = safety_net(hv, play, curr_loc);
-		// printf("ya dun messed up a-a-ron\n");
+		
 	}
 	registerBestPlay(play, message);
 }
@@ -171,12 +159,13 @@ PlaceId move_to_dracula(HunterView hv) {
 	int round = 0;
 	int path_length = 0;
 	Player curr_player = HvGetPlayer(hv);
-	// PlaceId curr_loc = HvGetPlayerLocation(hv, curr_player);
-
 	// returning the first location that will move hunter to dracula
 	PlaceId last_seen = HvGetLastKnownDraculaLocation(hv, &round);
+	PlaceId curr_loc = HvGetPlayerLocation(hv, curr_player);
+	if (curr_loc == last_seen) {
+		return optimal_move(hv, curr_loc);
+	}
 	PlaceId *locs = HvGetShortestPathTo(hv, curr_player, last_seen, &path_length);
-
 	return locs[0];
 }
 
@@ -253,4 +242,27 @@ char *safety_net(HunterView hv, char *play, PlaceId curr_loc) {
 		return placeIdToAbbrev(locs[0]);
 	else 
 		return placeIdToAbbrev(locs[1]);
+}
+
+// move towards
+PlaceId move_to_vamp (HunterView hv) {
+	int path_length = 0;
+	Player curr_player = HvGetPlayer(hv);
+
+	// returning the first location that will move hunter to dracula
+	PlaceId last_seen = HvGetVampireLocation(hv);
+
+	PlaceId *locs = HvGetShortestPathTo(hv, curr_player, last_seen, &path_length);
+
+	return locs[0];
+}
+
+// looping to check if previous player has moved towards same city
+PlaceId no_stacking(HunterView hv, PlaceId next_move, Player curr_player) {
+	for (int i = 0; i < curr_player; i++) {
+		if (HvGetPlayerLocation(hv, i) == next_move) {
+			next_move = optimal_move(hv, next_move);
+		}
+	}
+	return next_move;
 }

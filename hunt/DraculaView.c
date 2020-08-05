@@ -383,26 +383,31 @@ PlaceId *DvGetShortestPathTo(DraculaView dv, Player dracula, PlaceId dest,
 {
 	Round r = DvGetRound(dv);
 	PlaceId src = DvGetPlayerLocation(dv, dracula);
+
 	PlaceId *pred = DvDraculaBfs(dv, dracula, src, r, road, boat);
+
 	
 	// One pass to get the path length
 	int dist = 0;
 	PlaceId curr = dest;
 	while (curr != src) {
+		if (curr > MAX_REAL_PLACE || curr < MIN_REAL_PLACE) break;
 		dist++;
 		curr = pred[curr];
+		
 	}
-	
+
 	PlaceId *path = malloc(dist * sizeof(PlaceId));
 	// Another pass to copy the path in
 	int i = dist - 1;
 	curr = dest;
 	while (curr != src) {
+		if (curr > MAX_REAL_PLACE || curr < MIN_REAL_PLACE) break;
 		path[i] = curr;
 		curr = pred[curr];
 		i--;
 	}
-	
+
 	free(pred);
 	*pathLength = dist;
 	return path;
@@ -585,7 +590,8 @@ PlaceId TpHotSpot(DraculaView dv)
 	}
 	int x = spot[0];
 	free(spot);
-	// printf("%s\n", placeIdToAbbrev(x));
+	
+	
 	return x;
 }
 
@@ -664,15 +670,20 @@ PlaceId TpRandomWalk(DraculaView dv, PlaceId current)
 // teleporting
 PlaceId TpGetToHead(DraculaView dv, PlaceId head)
 {
- 	int path_length = 0;
-	PlaceId *path_road = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length, true, false);
-	PlaceId *path_any = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length, true, true);
+ 	int path_length_road = 0;
+ 	int path_length_any = 0;
+	// printf("test1\n");
+	PlaceId *path_road = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length_road, true, false);
+	// printf("test2\n");
+	PlaceId *path_any = DvGetShortestPathTo(dv, PLAYER_DRACULA, head, &path_length_any, true, true);
 
+	// printf("1\n");
 	// make sure not to enter the path from somewhere thats not the head
-	if(!DtIsOnPath(path_road[0]) || DtIsHead(path_road[0])) return path_road[0];
-	if(!DtIsOnPath(path_any[0]) || DtIsHead(path_road[0])) return path_any[0];
-
+	if(path_length_road > 0 && (!DtIsOnPath(path_road[0]) || DtIsHead(path_road[0]))) return path_road[0];
+	if(path_length_any > 0 && (!DtIsOnPath(path_any[0]) || DtIsHead(path_road[0]))) return path_any[0];
+	// printf("2\n");
 	// go anywhere thats not on the path, prioritise road over sea
+	int path_length = 0;
 	PlaceId *valid = DvGetValidMoves(dv, &path_length);
 	PlaceId valid_boat = NOWHERE;
 	for(int i = 0; i < path_length; i++) {
@@ -701,69 +712,16 @@ PlaceId TpGetToHead(DraculaView dv, PlaceId head)
 // Function that decides the next best move to get dracula to the "tail" of the
 // teleport route, "tail" is defined as the city dracula is forced to teleport from
 PlaceId TpGetToTail(PlaceId lastMove, int district) {
-	// perhaps i should call DvWhereCanIGo to check if I can't go anywhere, and if that is the case return the move TP
 
 	if (district == MADRID_PATH) {
 		switch (lastMove)
 		{
-		case MADRID:
-			return ALICANTE;
-			break;
-		case ALICANTE:
-			return GRANADA;
-			break;
-		case GRANADA:
-			return CADIZ;	
-			break;	
-		case CADIZ:
-			return DOUBLE_BACK_2;	
-			break;
-		case DOUBLE_BACK_2:
-			return HIDE;
-			break;
-		case HIDE:
-			return TELEPORT;
-			break;
-		default:
-			break;
-		}
-	} 
-	else if (district == PRAGUE_PATH) {
-		switch (lastMove)
-		{
-		case PRAGUE:
-			return BERLIN;
-			break;
-		case BERLIN:
-			return LEIPZIG;
-			break;
-		case LEIPZIG:
-			return HAMBURG;
-			break;
-		case HAMBURG:
-			return DOUBLE_BACK_3;
-			break;
-		case DOUBLE_BACK_3:
-			return HIDE;
-			break;
-		case HIDE:
-			return TELEPORT;
-			break;
-		default:
-			break;
-		}
-	} else if (district == VENICE_PATH) {
-		switch (lastMove)
-		{
-			case VENICE:
-				return GENOA;
+			case TYRRHENIAN_SEA:
+				return CAGLIARI;
 				break;
-			case GENOA:
-				return FLORENCE;
-			case FLORENCE:
-				return ROME;
-				break;
-			case ROME:
+			case CAGLIARI:
+				return MEDITERRANEAN_SEA;
+			case MEDITERRANEAN_SEA:
 				return DOUBLE_BACK_2;
 				break;
 			case DOUBLE_BACK_2:
@@ -775,7 +733,47 @@ PlaceId TpGetToTail(PlaceId lastMove, int district) {
 			default:
 				break;
 		}
-	}  else if (district == ENGCHA_PATH) {
+	} else if (district == ENGCHA_PATH) {
+		switch (lastMove)
+		{
+			case TYRRHENIAN_SEA:
+				return CAGLIARI;
+				break;
+			case CAGLIARI:
+				return MEDITERRANEAN_SEA;
+			case MEDITERRANEAN_SEA:
+				return DOUBLE_BACK_2;
+				break;
+			case DOUBLE_BACK_2:
+				return HIDE;
+				break;
+			case HIDE:
+				return TELEPORT;
+				break;
+			default:
+				break;
+		}
+	}  else if (district == VENICE_PATH) {
+		switch (lastMove)
+		{
+			case ENGLISH_CHANNEL:
+				return PLYMOUTH;
+				break;
+			case PLYMOUTH:
+				return LONDON;
+			case LONDON:
+				return DOUBLE_BACK_2;
+				break;
+			case DOUBLE_BACK_2:
+				return HIDE;
+				break;
+			case HIDE:
+				return TELEPORT;
+				break;
+			default:
+				break;
+		}
+	} else if (district == PRAGUE_PATH) {
 		switch (lastMove)
 		{
 			case ENGLISH_CHANNEL:

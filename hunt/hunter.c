@@ -71,9 +71,7 @@ void decideHunterMove(HunterView hv)
 		PlaceId vamp_loc = HvGetVampireLocation(hv); 
 		if (vamp_loc >= ADRIATIC_SEA && vamp_loc <= ZURICH) {
 			PlaceId next_move = move_to_vamp(hv);
-			printf("fkwef\n");
 			PlaceId real_move = no_stacking(hv, next_move, curr_player);
-			printf("fkw2121ef\n");
 			play = placeIdToAbbrev(real_move);
 			message = "chasing vampire";
 		} else {
@@ -99,17 +97,15 @@ void decideHunterMove(HunterView hv)
 		// move towards last known dracula location
 		PlaceId next_move = move_to_dracula(hv);
 		PlaceId real_move = no_stacking(hv, next_move, curr_player);
-		message = "move closer to dracula";
 		play = placeIdToAbbrev(real_move);
+		message = "move closer to dracula";
 	}
 
 	// if program is messed up and our move is invalid, change 
 	// it to first valid move so we don't get disqualified
 	if (!valid_move(hv, play)) {
-		
-		//message = play;
 		play = safety_net(hv, play, curr_loc);
-		
+		message = "safety net 2";
 	}
 	registerBestPlay(play, message);
 }

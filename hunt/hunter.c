@@ -91,17 +91,19 @@ void decideHunterMove(HunterView hv)
 		play = placeIdToAbbrev(next_move);
 		// printf("drac chaser\n");
 	// hunter is already at Bucharest, stay 
-	} else if (curr_player == camper(hv) && curr_loc == BUCHAREST) {
-		play = placeIdToAbbrev(BUCHAREST);
-		// printf("at BC\n");
-	// hunter will move to BUCHAREST to intercept dracula when he spawns
-	} else if (curr_player == camper(hv)) {
-		int path_length = 0;
+	} 
+	// else if (curr_player == camper(hv) && curr_loc == BUCHAREST) {
+	// 	play = placeIdToAbbrev(BUCHAREST);
+	// 	// printf("at BC\n");
+	// // hunter will move to BUCHAREST to intercept dracula when he spawns
+	// } else if (curr_player == camper(hv)) {
+	// 	int path_length = 0;
 
-		PlaceId *locs = HvGetShortestPathTo(hv, curr_player, BUCHAREST, &path_length);
-		play = placeIdToAbbrev(locs[0]);
-		// printf("going BC\n");
-	} else {
+	// 	PlaceId *locs = HvGetShortestPathTo(hv, curr_player, BUCHAREST, &path_length);
+	// 	play = placeIdToAbbrev(locs[0]);
+	// 	// printf("going BC\n");
+	// } 
+	else {
 		// move towards last known dracula location
 		PlaceId next_move = move_to_dracula(hv);
 

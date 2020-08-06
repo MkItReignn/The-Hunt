@@ -48,7 +48,7 @@ void decideHunterMove(HunterView hv)
 		} else if (curr_player == PLAYER_DR_SEWARD) {
 			play = placeIdToAbbrev(SARAGOSSA);
 		} else if (curr_player == PLAYER_VAN_HELSING) {
-			play = placeIdToAbbrev(COLOGNE);
+			play = placeIdToAbbrev(LONDON);
 		} else {
 			play = placeIdToAbbrev(BUCHAREST);
 		}
@@ -119,7 +119,7 @@ bool should_research(HunterView hv) {
 	// check location of dracula
 	if (HvGetLastKnownDraculaLocation(hv, &round) != NOWHERE) {
 		// return true if haven't seen dracula in at least 10 or more rounds
-		if (curr_round - round >= 10) {
+		if (curr_round - round >= 8) {
 			// printf("1\n");
 			return true;
 		} else {

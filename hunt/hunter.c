@@ -31,6 +31,7 @@ bool valid_move(HunterView hv, char *abbrev);
 char *safety_net(HunterView hv, char *play, PlaceId curr_loc);
 PlaceId move_to_vamp (HunterView hv);
 PlaceId no_stacking(HunterView hv, PlaceId next_move, Player curr_player);
+int rand_num(HunterView hv, int path_length);
 
 void decideHunterMove(HunterView hv)
 {
@@ -169,31 +170,39 @@ PlaceId move_to_dracula(HunterView hv) {
 PlaceId optimal_move(HunterView hv, PlaceId move) {
 	int num_locs = 0;
 
-	// preferably return rails
-	PlaceId *locs = HvWhereCanIGoByType(hv, false, true , false, &num_locs);
-	if (locs != NULL) {
-		// if first location is not same as move, return first location, 
-		// else return 2nd location if 2 or more locations exist
-		if (locs[0] != move) return locs[0];
-		if (num_locs > 1) return locs[1];	
-	}
+	// // preferably return rails
+	// PlaceId *locs = HvWhereCanIGoByType(hv, false, true , false, &num_locs);
+	// if (locs != NULL) {
+	// 	int rand = rand_num(hv, num_locs);
+	// 	return locs[rand];
+	// 	/* // if first location is not same as move, return first location, 
+	// 	// else return 2nd location if 2 or more locations exist
+	// 	if (locs[0] != move) return locs[0];
+	// 	if (num_locs > 1) return locs[1];	 */
+	// }
 
-	// 2nd preference sea
-	locs = HvWhereCanIGoByType(hv, false, false , true, &num_locs);
-	if (locs != NULL) {
-		// if first location is not same as move, return first location, 
-		// else return 2nd location if 2 or more locations exist
-		if (locs[0] != move) return locs[0];
-		if (num_locs > 1) return locs[1];	
-	}
+	// // 2nd preference sea
+	// PlaceId *locs = HvWhereCanIGoByType(hv, false, false , true, &num_locs);
+	// if (locs != NULL) {
+	// 	int rand = rand_num(hv, num_locs);
+	// 	return locs[rand];
+
+	// 	/* // if first location is not same as move, return first location, 
+	// 	// else return 2nd location if 2 or more locations exist
+	// 	if (locs[0] != move) return locs[0];
+	// 	if (num_locs > 1) return locs[1]; */	
+	// }
 
 	// last preference road
-	locs = HvWhereCanIGo(hv, &num_locs);
-	if (locs[0] != move) return locs[0];
-	if (num_locs > 1) return locs[1];	
+	PlaceId *locs = HvWhereCanIGo(hv, &num_locs);
+	int rand = rand_num(hv, num_locs);
+	return locs[rand];
+
+	/* if (locs[0] != move) return locs[0];
+	if (num_locs > 1) return locs[1];	 */
 
 	// if absolutely no other option, go to move
-	return move;
+	// return move;
 }
 
 Player dracula_chaser(HunterView hv) {
@@ -261,4 +270,10 @@ PlaceId no_stacking(HunterView hv, PlaceId next_move, Player curr_player) {
 		}
 	}
 	return next_move;
+}
+
+int rand_num(HunterView hv, int path_length) {
+	int round = HvGetRound(hv);
+	int rand = (round * 2311 + 2311) % path_length;
+	return rand;
 }

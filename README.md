@@ -20,10 +20,6 @@ The game involves the arch-vampire Dracula, four intrepid vampire hunters and th
 - The game starts at a score of 366 points, and for each round that pass the score diminishes
 - The hunters need to kill Dracula before the score reaches 0
 
-# The Data
-
-The game engine passes the game history to the View's ADT which process it, build a game state, and then makes part of the game state available to the AIs (i.e. gives a 'view' of the game to the AI). 
-
 ## The Map
 
 ![map](images/map2.png)

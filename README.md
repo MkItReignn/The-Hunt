@@ -4,8 +4,8 @@
 
 - This project is based on a real board game called "[The Fury of Dracula](https://en.wikipedia.org/wiki/The_Fury_of_Dracula)," which has been modified to simplify the making of the interface
 - The ultimate goal was to write AIs that play The Fury of Dracula by creating:
-  - "The View": The interface of game, where each character has access to their own View abstract data types (ADT)
-  - "The Hunt": The implementation of AIs 
+  - The View: The interface of game, where each character has access to their own View abstract data types (ADT)
+  - The Hunt: The implementation of AIs 
 
 # Introduction to the game
 

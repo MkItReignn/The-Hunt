@@ -1,4 +1,4 @@
-<img src="images/drac.png" width = 1170 height = 300>
+<img src="images/drac.png" width = 1170 height = 250>
 
 # Background
 

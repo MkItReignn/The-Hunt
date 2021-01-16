@@ -1,6 +1,6 @@
 <img src="images/drac.png" width = 1170 height = 250>
 
-# Introduction
+# Background
 
 - This project is based on a real board game called "[The Fury of Dracula](https://en.wikipedia.org/wiki/The_Fury_of_Dracula)," which has been modified to simplify the making of the interface
 - The ultimate goal was to write AIs that play The Fury of Dracula by creating:

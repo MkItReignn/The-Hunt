@@ -1,3 +1,5 @@
+<img src="images/drac.png" width = 1170 height = 300>
+
 # Background
 
 This program is a modified version of a real board game called "[The Fury of Dracula](https://en.wikipedia.org/wiki/The_Fury_of_Dracula)," where the original rules have been simplified in the making of the interface. It was created with two main implementations. "The View" is the interface of the game, in which it updates the game state with every character turn. "The Hunt" is where the AI strategy is implemented.
@@ -36,11 +38,11 @@ Moving by sea is neat; you can rapidly travel a long way. Unfortunately, hunters
 
 ## The Map
 
-![map2](C:\Users\akiam\Desktop\UNI\2020\T2\COMP2521\Fury of Dracula\map2.png)
+![map](images/map2.png)
 
 # The Data
 
 The game engine passes the game history to the View's ADT which process it, build a game state, and then makes part of the game state available to the AIs (i.e. gives a 'view' of the game to the AI). 
 
-![[diagram]](https://www.cse.unsw.edu.au/~cs2521/20T2/ass/ass2/Pics/game-processes.png)
+![The-data-diagram](images/game-processes.png)
 

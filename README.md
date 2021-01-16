@@ -30,3 +30,26 @@ The game engine passes the game history to the View's ADT which process it, buil
 
 ![The-data-diagram](images/game-processes.png)
 
+## The files
+
+### ```GameView```
+
+- The ADT which is responsible for maintaining the entire interface of the game which includes:
+  - Rounds, locations of players and traps, trap and health systems, etc.
+
+### ```HunterView``` and ```DraculaView```
+
+- Provides the view points appropriate to either a hunter player or the Dracula player
+- Provides much the same functionality as the *GameView* ADT, but with some specialisations towards the needs and/or capabilities of the relevant players
+
+### ```Map``` 
+
+- The Map ADT, which contains all data and functions relevant to map locations
+
+### ```Places```
+
+- Contains all data and functions relevant to the specific locations within the map
+
+### ```Utils```
+
+- Utility functions that has repeated use across the ```View``` files
